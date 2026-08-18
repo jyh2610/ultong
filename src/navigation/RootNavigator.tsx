@@ -1,8 +1,8 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { DetailScreen } from "../screens/DetailScreen";
-import { HomeScreen } from "../screens/HomeScreen";
+import DetailScreen from "@/screens/Detail";
+import HomeScreen from "@/screens/Home";
 
 export type RootStackParamList = {
   Home: undefined;

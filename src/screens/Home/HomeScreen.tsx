@@ -1,12 +1,9 @@
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Pressable, Text, View } from "react-native";
 
-import type { RootStackParamList } from "../navigation/RootNavigator";
-import { useCounterStore } from "../store/exampleStore";
+import { useCounterStore } from "../../store/exampleStore";
+import type { HomeScreenProps } from "./types";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Home">;
-
-export function HomeScreen({ navigation }: Props) {
+export function HomeScreen({ navigation }: HomeScreenProps) {
   const count = useCounterStore((state) => state.count);
   const increment = useCounterStore((state) => state.increment);
 

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+body{margin:0;background:#EDE9E1}
+::-webkit-scrollbar{display:none}
+a{color:#1F6D52}
+a:hover{color:#16503C}
+</style>
+</helmet>
+<div style="width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px 20px;box-sizing:border-box">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{darkFrame}}" hint-size="402px,874px">
+<div style="width:100%;height:100%;display:flex;flex-direction:column;background:#FAF7F6;font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo',sans-serif;color:#1C1C1E;position:relative;overflow:hidden">
+<div style="height:54px;flex-shrink:0"></div>
+<div style="flex:1;overflow-y:auto;position:relative">
+
+<sc-if value="{{isOnboarding}}" hint-placeholder-val="{{true}}">
+<div style="padding:16px 20px 110px">
+  <div style="margin-bottom:22px">
+    <div style="font-size:13px;font-weight:700;color:{{primary}};letter-spacing:0.5px;margin-bottom:8px">멍냥로드</div>
+    <div style="font-size:25px;font-weight:700;line-height:1.35">반려동물 프로필을<br/>등록해주세요</div>
+    <div style="font-size:13.5px;color:#6B6B6E;margin-top:8px;line-height:1.5">체중과 크기를 기준으로 시설별 입장 가능 여부를 자동으로 확인해드려요</div>
+  </div>
+  <sc-for list="{{petsView}}" as="p" hint-placeholder-count="1">
+    <div style="background:#fff;border:1px solid #EEE9E0;border-radius:16px;padding:16px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px">
+        <input value="{{p.name}}" onChange="{{p.onNameChange}}" style="font-size:16px;font-weight:700;border:none;background:transparent;outline:none;flex:1;min-width:0;padding:0"/>
+        <button onClick="{{p.onRemove}}" style="border:none;background:none;color:#B4720A;font-size:12.5px;flex-shrink:0">삭제</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <button onClick="{{p.onSpeciesToggle}}" style="padding:10px;border-radius:10px;border:1px solid #E8E4DC;background:#FAF8F4;font-size:13.5px;font-weight:600">{{p.species}}</button>
+        <input value="{{p.breed}}" onChange="{{p.onBreedChange}}" placeholder="견종/묘종" style="padding:10px;border-radius:10px;border:1px solid #E8E4DC;font-size:13.5px;box-sizing:border-box;min-width:0"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#6B6B6E;margin-bottom:6px">
+          <span>체중</span><span style="font-weight:700;color:#1C1C1E">{{p.weight}}kg · {{p.size}}견</span>
+        </div>
+        <input type="range" min="1" max="40" value="{{p.weight}}" onChange="{{p.onWeightChange}}" style="width:100%"/>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid #F1EEE7">
+        <span style="font-size:13.5px">이동장(케이지) 소지</span>
+        <button onClick="{{p.onCageToggle}}" style="width:46px;height:26px;border-radius:13px;border:none;background:{{p.cageBg}};position:relative;padding:0;cursor:pointer">
+          <div style="width:20px;height:20px;border-radius:10px;background:#fff;position:absolute;top:3px;left:{{p.cageLeft}};transition:left .15s"></div>
+        </button>
+      </div>
+    </div>
+  </sc-for>
+  <button onClick="{{addPet}}" style="width:100%;padding:14px;border-radius:14px;border:1.5px dashed #C9CABF;background:none;color:#6B6B6E;font-size:13.5px;font-weight:600;margin-bottom:8px">+ 반려동물 추가</button>
+</div>
+<div style="position:sticky;bottom:0;padding:14px 20px 30px;background:linear-gradient(180deg,rgba(250,247,246,0) 0%,#FAF7F6 45%)">
+  <button onClick="{{finishOnboarding}}" style="width:100%;padding:16px;border-radius:16px;border:none;background:{{primary}};color:#fff;font-size:15.5px;font-weight:700">시작하기</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isHome}}" hint-placeholder-val="{{false}}">
+<div style="padding:16px 20px 30px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+    <div>
+      <div style="font-size:13px;color:#6B6B6E;margin-bottom:4px">반가워요</div>
+      <div style="font-size:21px;font-weight:700;line-height:1.35">{{pet.name}}와 함께<br/>어디로 떠나볼까요?</div>
+    </div>
+    <button onClick="{{goMypageTab}}" style="width:42px;height:42px;border-radius:21px;background:#EEF5F0;border:none;display:flex;align-items:center;justify-content:center;font-size:17px;color:{{primary}};font-weight:700;flex-shrink:0">{{petInitial}}</button>
+  </div>
+  <button onClick="{{openSearchAll}}" style="width:100%;display:flex;align-items:center;gap:10px;padding:15px 16px;border-radius:16px;border:1px solid #E8E4DC;background:#fff;margin-bottom:10px;box-sizing:border-box">
+    <svg width="16" height="16" viewBox="0 0 16 16" style="flex-shrink:0"><circle cx="7" cy="7" r="5.5" stroke="#9A9A9E" stroke-width="1.6" fill="none"/><path d="M11 11L14.5 14.5" stroke="#9A9A9E" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <span style="color:#9A9A9E;font-size:14.5px">지역, 시설명으로 검색</span>
+  </button>
+  <button onClick="{{openSearchAll}}" style="width:100%;display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:14px;border:1px solid #E8E4DC;background:#EEF5F0;margin-bottom:16px;box-sizing:border-box">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 5 14.5 5 9.5C5 5.9 8.1 3 12 3C15.9 3 19 5.9 19 9.5C19 14.5 12 21 12 21Z" stroke="{{primary}}" stroke-width="1.8" fill="none"/><circle cx="12" cy="9.5" r="2.3" stroke="{{primary}}" stroke-width="1.8"/></svg>
+    <span style="color:{{primary}};font-size:13.5px;font-weight:600">내 주변 반려동반 가능 시설 보기</span>
+  </button>
+  <div style="display:flex;gap:8px;margin-bottom:26px;overflow-x:auto">
+    <sc-for list="{{homeCategories}}" as="c" hint-placeholder-count="4">
+      <button onClick="{{c.onClick}}" style="flex-shrink:0;padding:9px 15px;border-radius:12px;border:1px solid #E8E4DC;background:#fff;font-size:12.5px;font-weight:600;white-space:nowrap">{{c.label}}</button>
+    </sc-for>
+  </div>
+  <div style="font-size:15.5px;font-weight:700;margin-bottom:4px">우리 아이 조건에 맞는 추천</div>
+  <div style="font-size:12px;color:#6B6B6E;margin-bottom:14px">{{pet.name}}({{petSize}}견 · {{pet.weight}}kg) 기준</div>
+  <div style="display:flex;gap:12px;overflow-x:auto;margin:0 -20px;padding:0 20px 6px">
+    <sc-for list="{{recommendations}}" as="f" hint-placeholder-count="3">
+      <button onClick="{{f.onOpen}}" style="flex-shrink:0;width:172px;text-align:left;border:none;background:none;padding:0">
+        <div style="width:172px;height:112px;border-radius:14px;overflow:hidden;margin-bottom:8px">
+          <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{f.slotId}}" shape="rect" radius="14" placeholder="시설 사진" hint-size="172px,112px" style="width:100%;height:100%"></x-import>
+        </div>
+        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:7px;background:{{f.badgeBg}};color:{{f.badgeFg}}">{{f.match.status}}</span>
+        <div style="font-size:14px;font-weight:700;margin-top:6px">{{f.name}} · {{f.type}}</div>
+        <div style="font-size:11.5px;color:#6B6B6E">{{f.region}}</div>
+        <sc-if value="{{f.alertFlag}}" hint-placeholder-val="{{false}}">
+          <div style="font-size:10.5px;color:#B4720A;margin-top:4px;font-weight:600">⚠ 규정 변경 가능성</div>
+        </sc-if>
+      </button>
+    </sc-for>
+  </div>
+  <div style="font-size:15.5px;font-weight:700;margin:26px 0 12px">인기 지역</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+    <sc-for list="{{regionsView}}" as="r" hint-placeholder-count="4">
+      <button onClick="{{r.onClick}}" style="padding:14px 6px;border-radius:12px;border:1px solid #E8E4DC;background:#fff;font-size:12.5px;font-weight:600;text-align:center">{{r.name}}</button>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{isSearch}}" hint-placeholder-val="{{false}}">
+<div style="padding:14px 20px 24px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <sc-if value="{{canBack}}" hint-placeholder-val="{{true}}">
+      <button onClick="{{back}}" style="width:34px;height:34px;border-radius:17px;border:1px solid #E8E4DC;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0">
+        <svg width="8" height="14" viewBox="0 0 8 14"><path d="M7 1L1 7l6 6" stroke="#1C1C1E" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </sc-if>
+    <div style="font-size:18px;font-weight:700;flex:1">검색결과 <span style="color:#6B6B6E;font-weight:500;font-size:13.5px">· {{facilities.length}}곳</span></div>
+    <div style="display:flex;background:#F0EFEC;border-radius:10px;padding:2px;flex-shrink:0">
+      <button onClick="{{setListOrMapList}}" style="padding:6px 12px;border-radius:8px;border:none;font-size:12px;font-weight:700;background:{{listBtnBg}};color:{{listBtnFg}}">리스트</button>
+      <button onClick="{{setListOrMapMap}}" style="padding:6px 12px;border-radius:8px;border:none;font-size:12px;font-weight:700;background:{{mapBtnBg}};color:{{mapBtnFg}}">지도</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto">
+    <sc-for list="{{categoriesView}}" as="c" hint-placeholder-count="5">
+      <button onClick="{{c.onClick}}" style="flex-shrink:0;padding:8px 14px;border-radius:11px;border:1px solid {{c.border}};background:{{c.bg}};color:{{c.fg}};font-size:12.5px;font-weight:700;white-space:nowrap">{{c.label}}</button>
+    </sc-for>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px;font-size:11px;color:#6B6B6E;flex-wrap:wrap">
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#2FA968;display:inline-block"></span>입장가능 {{okCount}}</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#F0A431;display:inline-block"></span>조건부가능 {{condCount}}</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#9A9A9E;display:inline-block"></span>확인필요 {{checkCount}}</span>
+  </div>
+  <sc-if value="{{isMapView}}" hint-placeholder-val="{{false}}">
+    <div style="height:340px;border-radius:16px;background:#E4E7E0;display:flex;align-items:center;justify-content:center;color:#9A9A9E;font-size:12.5px;margin-bottom:12px;text-align:center;padding:20px;box-sizing:border-box">지도 미리보기<br/>(실제 지도 연동 예정)</div>
+  </sc-if>
+  <sc-if value="{{isListView}}" hint-placeholder-val="{{true}}">
+    <sc-for list="{{facilities}}" as="f" hint-placeholder-count="4">
+      <button onClick="{{f.onOpen}}" style="width:100%;text-align:left;display:flex;gap:12px;background:#fff;border:1px solid #EEE9E0;border-radius:16px;padding:12px;margin-bottom:12px;box-sizing:border-box">
+        <div style="width:68px;height:68px;border-radius:12px;flex-shrink:0;overflow:hidden">
+          <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{f.slotId}}" shape="rect" radius="12" placeholder="사진" hint-size="68px,68px" style="width:100%;height:100%"></x-import>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div style="font-size:14.5px;font-weight:700">{{f.name}}</div>
+            <span style="font-size:10px;font-weight:700;padding:3px 7px;border-radius:7px;white-space:nowrap;background:{{f.badgeBg}};color:{{f.badgeFg}}">{{f.match.status}}</span>
+          </div>
+          <div style="font-size:12px;color:#6B6B6E;margin:2px 0 6px">{{f.type}} · {{f.region}}</div>
+          <div style="font-size:10.5px;color:#9A9A9E">최종 갱신 {{f.updated}}</div>
+          <sc-if value="{{f.alertFlag}}" hint-placeholder-val="{{false}}">
+            <div style="font-size:10.5px;color:#B4720A;margin-top:4px;font-weight:600">⚠ 최근 규정 변경 가능성 (제보 누적)</div>
+          </sc-if>
+        </div>
+      </button>
+    </sc-for>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isDetail}}" hint-placeholder-val="{{false}}">
+<div>
+  <div style="position:relative">
+    <div style="width:100%;height:210px;overflow:hidden">
+      <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{selected.slotId}}" shape="rect" placeholder="시설 대표 사진" hint-size="100%,210px" style="width:100%;height:100%"></x-import>
+    </div>
+    <button onClick="{{back}}" style="position:absolute;top:14px;left:14px;width:34px;height:34px;border-radius:17px;background:rgba(255,255,255,0.92);border:none;display:flex;align-items:center;justify-content:center;padding:0">
+      <svg width="8" height="14" viewBox="0 0 8 14"><path d="M7 1L1 7l6 6" stroke="#1C1C1E" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+  <div style="padding:18px 20px 0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11.5px;color:#6B6B6E;margin-bottom:4px">{{selected.category}} · {{selected.region}}</div>
+        <div style="font-size:20px;font-weight:700">{{selected.name}}</div>
+        <div style="font-size:12.5px;color:#6B6B6E;margin-top:2px">{{selected.type}}</div>
+      </div>
+      <span style="font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:10px;white-space:nowrap;background:{{selected.badgeBg}};color:{{selected.badgeFg}}">{{selected.match.status}}</span>
+    </div>
+    <sc-if value="{{selected.alertFlag}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;align-items:center;gap:8px;background:#FDF1DD;border:1px solid #F0D9A8;border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:12px;color:#8A5A0A;font-weight:600">⚠ 최근 제보가 누적된 시설이에요 — 방문 전 규정 변경 여부를 다시 확인해보세요</div>
+    </sc-if>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:22px;padding:14px;background:#fff;border:1px solid #EEE9E0;border-radius:14px;font-size:12.5px;color:#4A4A4C">
+      <div>{{selected.address}}</div>
+      <div>{{selected.hours}}</div>
+      <div style="color:#9A9A9E">최종 데이터 갱신일 {{selected.updated}}</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:15px;font-weight:700">조건 매칭 결과</div>
+      <div style="font-size:10.5px;color:#9A9A9E">{{pet.name}} 기준</div>
+    </div>
+    <div style="background:#fff;border:1px solid #EEE9E0;border-radius:14px;overflow:hidden;margin-bottom:8px">
+      <sc-for list="{{selectedReasons}}" as="r" hint-placeholder-count="4">
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #F4F1EA">
+          <div style="width:20px;height:20px;border-radius:10px;background:{{r.iconBg}};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <sc-if value="{{r.ok}}" hint-placeholder-val="{{true}}">
+              <svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </sc-if>
+            <sc-if value="{{r.notOk}}" hint-placeholder-val="{{false}}">
+              <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1 1L7 7M7 1L1 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </sc-if>
+          </div>
+          <div style="flex:1;font-size:13px">{{r.label}}</div>
+          <span style="font-size:9.5px;font-weight:700;color:{{r.confFg}};flex-shrink:0">{{r.confidence}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background:#FAF8F4;border:1px dashed #DDD6C8;border-radius:12px;padding:12px 14px;margin-bottom:10px">
+      <div style="font-size:10.5px;font-weight:700;color:#9A8B6E;margin-bottom:5px">원문 근거</div>
+      <div style="font-size:12px;color:#5C5138;line-height:1.6;font-style:italic">"{{selectedRawText}}"</div>
+    </div>
+    <div style="font-size:10.5px;color:#9A9A9E;line-height:1.5;margin-bottom:24px">'확실'은 원문에 조건이 명시된 경우, '추정'은 원문이 모호해 일반 기준을 적용한 경우예요.</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:10px">동반 준비물</div>
+    <div style="background:#fff;border:1px solid #EEE9E0;border-radius:14px;padding:4px;margin-bottom:20px">
+      <sc-for list="{{selectedChecklist}}" as="item" hint-placeholder-count="3">
+        <button onClick="{{item.onToggle}}" style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 10px;border:none;background:none;text-align:left">
+          <div style="width:19px;height:19px;border-radius:6px;border:1.5px solid {{item.boxBorder}};background:{{item.boxBg}};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <sc-if value="{{item.checked}}" hint-placeholder-val="{{false}}">
+              <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.2 5.7L8 1" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </sc-if>
+          </div>
+          <span style="font-size:13.5px;text-decoration:{{item.textDecoration}};color:{{item.textColor}}">{{item.label}}</span>
+        </button>
+      </sc-for>
+    </div>
+    <button onClick="{{reportFacility}}" style="width:100%;padding:13px;border-radius:14px;border:1px solid #E8E4DC;background:#fff;color:#6B6B6E;font-size:13px;font-weight:600;margin-bottom:14px">실제 규정이 다른가요? 제보하기</button>
+  </div>
+  <div style="position:sticky;bottom:0;display:flex;gap:10px;padding:12px 20px 26px;background:linear-gradient(180deg,rgba(250,247,246,0),#FAF7F6 30%)">
+    <button onClick="{{toggleSelectedSaved}}" style="flex:1;padding:15px;border-radius:14px;border:none;background:{{saveBtnBg}};color:{{saveBtnFg}};font-size:14.5px;font-weight:700">{{saveBtnLabel}}</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{isCourse}}" hint-placeholder-val="{{false}}">
+<div style="padding:16px 20px 30px">
+  <div style="font-size:18px;font-weight:700;margin-bottom:4px">내 여행 코스</div>
+  <div style="font-size:12.5px;color:#6B6B6E;margin-bottom:18px">담은 시설 {{savedCount}}곳</div>
+  <sc-if value="{{hasSaved}}" hint-placeholder-val="{{false}}">
+    <sc-for list="{{savedFacilitiesView}}" as="f" hint-placeholder-count="2">
+      <div style="display:flex;gap:12px;background:#fff;border:1px solid #EEE9E0;border-radius:16px;padding:13px;margin-bottom:12px;align-items:center">
+        <div style="width:26px;height:26px;border-radius:8px;background:#EEF5F0;color:{{primary}};font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{f.order}}</div>
+        <button onClick="{{f.onOpen}}" style="flex:1;text-align:left;border:none;background:none;min-width:0;padding:0">
+          <div style="display:flex;justify-content:space-between;gap:8px">
+            <div style="font-size:14px;font-weight:700">{{f.name}}</div>
+            <span style="font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:7px;white-space:nowrap;background:{{f.badgeBg}};color:{{f.badgeFg}}">{{f.match.status}}</span>
+          </div>
+          <div style="font-size:11.5px;color:#6B6B6E;margin-top:2px">{{f.type}} · {{f.region}}</div>
+        </button>
+        <button onClick="{{f.onRemove}}" style="border:none;background:none;color:#B4720A;font-size:12px;flex-shrink:0">제거</button>
+      </div>
+    </sc-for>
+    <div style="font-size:15px;font-weight:700;margin:22px 0 6px">통합 준비물</div>
+    <div style="font-size:11.5px;color:#6B6B6E;margin-bottom:10px">담은 시설의 조건을 합쳐 중복 없이 정리했어요</div>
+    <div style="background:#fff;border:1px solid #EEE9E0;border-radius:14px;padding:4px">
+      <sc-for list="{{mergedChecklistView}}" as="item" hint-placeholder-count="3">
+        <button onClick="{{item.onToggle}}" style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 10px;border:none;background:none;text-align:left">
+          <div style="width:19px;height:19px;border-radius:6px;border:1.5px solid {{item.boxBorder}};background:{{item.boxBg}};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <sc-if value="{{item.checked}}" hint-placeholder-val="{{false}}">
+              <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.2 5.7L8 1" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </sc-if>
+          </div>
+          <span style="font-size:13.5px;text-decoration:{{item.textDecoration}};color:{{item.textColor}}">{{item.label}}</span>
+        </button>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{noSaved}}" hint-placeholder-val="{{true}}">
+    <div style="text-align:center;padding:70px 20px;color:#9A9A9E">
+      <div style="font-size:13.5px;margin-bottom:6px">아직 담은 시설이 없어요</div>
+      <div style="font-size:12px;line-height:1.5">검색결과에서 마음에 드는 시설을<br/>코스에 담아보세요</div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isOffline}}" hint-placeholder-val="{{false}}">
+<div style="padding:16px 20px 30px">
+  <div style="font-size:18px;font-weight:700;margin-bottom:6px">오프라인 보관함</div>
+  <div style="font-size:12.5px;color:#6B6B6E;margin-bottom:18px;line-height:1.5">여행 현장에서 네트워크 없이도 코스와 준비물을 확인할 수 있어요</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #EEE9E0;border-radius:16px;padding:16px;margin-bottom:20px">
+    <div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px">기기에 저장</div>
+      <div style="font-size:11.5px;color:#6B6B6E">{{offlineStatusText}}</div>
+    </div>
+    <button onClick="{{toggleOffline}}" style="width:46px;height:26px;border-radius:13px;border:none;background:{{offlineToggleBg}};position:relative;padding:0;flex-shrink:0;cursor:pointer">
+      <div style="width:20px;height:20px;border-radius:10px;background:#fff;position:absolute;top:3px;left:{{offlineToggleLeft}};transition:left .15s"></div>
+    </button>
+  </div>
+  <sc-if value="{{hasSaved}}" hint-placeholder-val="{{false}}">
+    <div style="font-size:13.5px;font-weight:700;color:#6B6B6E;margin-bottom:10px">저장된 코스 {{savedCount}}곳</div>
+    <sc-for list="{{savedFacilitiesView}}" as="f" hint-placeholder-count="2">
+      <div style="display:flex;gap:12px;background:#fff;border:1px solid #EEE9E0;border-radius:16px;padding:13px;margin-bottom:12px;align-items:center">
+        <div style="width:26px;height:26px;border-radius:8px;background:#EEF5F0;color:{{primary}};font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{f.order}}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700">{{f.name}}</div>
+          <div style="font-size:11.5px;color:#6B6B6E;margin-top:2px">{{f.type}} · {{f.region}}</div>
+        </div>
+      </div>
+    </sc-for>
+    <div style="font-size:15px;font-weight:700;margin:20px 0 6px">통합 준비물</div>
+    <div style="background:#fff;border:1px solid #EEE9E0;border-radius:14px;padding:4px">
+      <sc-for list="{{mergedChecklistView}}" as="item" hint-placeholder-count="3">
+        <button onClick="{{item.onToggle}}" style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 10px;border:none;background:none;text-align:left">
+          <div style="width:19px;height:19px;border-radius:6px;border:1.5px solid {{item.boxBorder}};background:{{item.boxBg}};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <sc-if value="{{item.checked}}" hint-placeholder-val="{{false}}">
+              <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.2 5.7L8 1" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </sc-if>
+          </div>
+          <span style="font-size:13.5px;text-decoration:{{item.textDecoration}};color:{{item.textColor}}">{{item.label}}</span>
+        </button>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{noSaved}}" hint-placeholder-val="{{true}}">
+    <div style="text-align:center;padding:60px 20px;color:#9A9A9E">
+      <div style="font-size:13.5px;margin-bottom:6px">저장할 코스가 아직 없어요</div>
+      <div style="font-size:12px;line-height:1.5">코스 탭에서 시설을 담으면<br/>여기서 오프라인으로 저장할 수 있어요</div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isMypage}}" hint-placeholder-val="{{false}}">
+<div style="padding:16px 20px 30px">
+  <div style="font-size:18px;font-weight:700;margin-bottom:20px">마이페이지</div>
+  <div style="font-size:12.5px;font-weight:700;color:#6B6B6E;margin-bottom:10px">반려동물 프로필</div>
+  <sc-for list="{{petsView}}" as="p" hint-placeholder-count="1">
+    <div style="background:#fff;border:1px solid #EEE9E0;border-radius:16px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px">
+        <input value="{{p.name}}" onChange="{{p.onNameChange}}" style="font-size:15.5px;font-weight:700;border:none;background:transparent;outline:none;flex:1;min-width:0;padding:0"/>
+        <button onClick="{{p.onRemove}}" style="border:none;background:none;color:#B4720A;font-size:12px;flex-shrink:0">삭제</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <button onClick="{{p.onSpeciesToggle}}" style="padding:10px;border-radius:10px;border:1px solid #E8E4DC;background:#FAF8F4;font-size:13px;font-weight:600">{{p.species}}</button>
+        <input value="{{p.breed}}" onChange="{{p.onBreedChange}}" placeholder="견종/묘종" style="padding:10px;border-radius:10px;border:1px solid #E8E4DC;font-size:13px;box-sizing:border-box;min-width:0"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#6B6B6E;margin-bottom:6px">
+          <span>체중</span><span style="font-weight:700;color:#1C1C1E">{{p.weight}}kg · {{p.size}}견</span>
+        </div>
+        <input type="range" min="1" max="40" value="{{p.weight}}" onChange="{{p.onWeightChange}}" style="width:100%"/>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid #F1EEE7">
+        <span style="font-size:13px">이동장(케이지) 소지</span>
+        <button onClick="{{p.onCageToggle}}" style="width:44px;height:25px;border-radius:13px;border:none;background:{{p.cageBg}};position:relative;padding:0;cursor:pointer">
+          <div style="width:19px;height:19px;border-radius:10px;background:#fff;position:absolute;top:3px;left:{{p.cageLeft}};transition:left .15s"></div>
+        </button>
+      </div>
+    </div>
+  </sc-for>
+  <button onClick="{{addPet}}" style="width:100%;padding:13px;border-radius:14px;border:1.5px dashed #C9CABF;background:none;color:#6B6B6E;font-size:13px;font-weight:600;margin-bottom:8px">+ 반려동물 추가</button>
+  <div style="font-size:12.5px;font-weight:700;color:#6B6B6E;margin:24px 0 10px">계정</div>
+  <div style="background:#fff;border:1px solid #EEE9E0;border-radius:14px;overflow:hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid #F4F1EA;font-size:13.5px">알림 설정</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #F4F1EA;font-size:13.5px">데이터 출처 안내</div>
+    <div style="padding:14px 16px;font-size:13.5px;color:#B4720A">로그아웃</div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+  <div style="position:absolute;left:20px;right:20px;bottom:20px;background:#1C1C1E;color:#fff;padding:12px 16px;border-radius:12px;font-size:12.5px;text-align:center;z-index:30;box-sizing:border-box">{{toast}}</div>
+</sc-if>
+
+</div>
+
+<sc-if value="{{showTabBar}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;border-top:1px solid #EEE9E0;background:#fff;padding:9px 20px 28px;flex-shrink:0">
+  <button onClick="{{goHome}}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;padding:0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4L20 11V19A1 1 0 0 1 19 20H5A1 1 0 0 1 4 19V11Z" stroke="{{tabHomeColor}}" stroke-width="1.8" fill="none" stroke-linejoin="round"/></svg>
+    <span style="font-size:10px;font-weight:600;color:{{tabHomeColor}}">홈</span>
+  </button>
+  <button onClick="{{goCourseTab}}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;padding:0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 19V7C4 5.9 4.9 5 6 5H10L12 8H18C19.1 8 20 8.9 20 10V19" stroke="{{tabCourseColor}}" stroke-width="1.8" fill="none" stroke-linejoin="round"/></svg>
+    <span style="font-size:10px;font-weight:600;color:{{tabCourseColor}}">코스</span>
+  </button>
+  <button onClick="{{goOfflineTab}}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;padding:0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3V15M12 15L8 11M12 15L16 11" stroke="{{tabOfflineColor}}" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17V19A2 2 0 0 0 6 21H18A2 2 0 0 0 20 19V17" stroke="{{tabOfflineColor}}" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+    <span style="font-size:10px;font-weight:600;color:{{tabOfflineColor}}">보관함</span>
+  </button>
+  <button onClick="{{goMypageTab}}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;padding:0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="{{tabMypageColor}}" stroke-width="1.8"/><path d="M5 20C5 16.5 8.1 14 12 14C15.9 14 19 16.5 19 20" stroke="{{tabMypageColor}}" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+    <span style="font-size:10px;font-weight:600;color:{{tabMypageColor}}">마이페이지</span>
+  </button>
+</div>
+</sc-if>
+
+</div>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:500,&quot;height&quot;:950},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#7A4A2B&quot;,&quot;options&quot;:[&quot;#1F6D52&quot;,&quot;#0F766E&quot;,&quot;#2563A6&quot;,&quot;#7A4A2B&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;darkFrame&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;onboarding&quot;,&quot;options&quot;:[&quot;onboarding&quot;,&quot;home&quot;,&quot;search&quot;,&quot;detail&quot;,&quot;course&quot;,&quot;offline&quot;,&quot;mypage&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'onboarding',
+    stack: ['onboarding'],
+    pets: [{ id: 1, name: '뽀삐', species: '강아지', breed: '몰티즈', weight: 3, hasCage: true }],
+    selectedId: 'a',
+    category: 'all',
+    listOrMap: 'list',
+    savedIds: ['a', 'b'],
+    checkedPrep: {},
+    toast: '',
+    offlineSaved: true,
+  };
+
+  componentDidMount() {
+    const start = this.props.startScreen;
+    if (start && start !== 'onboarding') this.setState({ screen: start, stack: [start] });
+  }
+
+  sizeOf(w) {
+    if (w <= 5) return '소형';
+    if (w <= 15) return '중형';
+    return '대형';
+  }
+
+  facilitiesData() {
+    return [
+      { id: 'a', name: '시설A', category: '음식', type: '감성 카페', region: '서울', address: '서울 마포구 어딘가로 12', hours: '매일 10:00 - 21:00', updated: '2026.06.02', allowedSizes: ['소형'], weightLimitKg: 5, cageRequired: false, leashRequired: true, indoorAllowed: true, outdoorAllowed: true, confidence: '확실', reportCount: 0, rawText: '소형견(5kg 이하)만 실내 동반 가능, 목줄 착용 필수' },
+      { id: 'b', name: '시설B', category: '숙박', type: '독채 펜션', region: '강릉', address: '강원 강릉시 어딘가길 45', hours: '체크인 15:00 · 체크아웃 11:00', updated: '2026.05.20', allowedSizes: ['소형', '중형', '대형'], weightLimitKg: null, cageRequired: false, leashRequired: true, indoorAllowed: true, outdoorAllowed: true, confidence: '확실', reportCount: 1, rawText: '견종 제한 없음, 실내외 동반 가능하나 리드줄 착용 필수' },
+      { id: 'c', name: '시설C', category: '관광지', type: '수목원', region: '제주', address: '제주 서귀포시 어딘가로 8', hours: '매일 09:00 - 18:00', updated: '2026.04.11', allowedSizes: ['소형', '중형'], weightLimitKg: 10, cageRequired: true, leashRequired: true, indoorAllowed: false, outdoorAllowed: true, confidence: '추정', reportCount: 4, rawText: '중형견 이하 동반 가능, 이동장 지참 권장 (실내 전시관 제외)' },
+      { id: 'd', name: '시설D', category: '쇼핑', type: '편집숍', region: '서울', address: '서울 성동구 어딘가길 3', hours: '매일 11:00 - 20:00', updated: '2026.06.15', allowedSizes: ['소형', '중형', '대형'], weightLimitKg: null, cageRequired: true, leashRequired: false, indoorAllowed: true, outdoorAllowed: false, confidence: '확실', reportCount: 0, rawText: '이동장(케이지) 착용 시에만 매장 내 동반 가능' },
+      { id: 'e', name: '시설E', category: '음식', type: '해변 카페', region: '부산', address: '부산 해운대구 어딘가로 21', hours: '매일 10:00 - 22:00', updated: '2026.03.30', allowedSizes: ['소형', '중형', '대형'], weightLimitKg: null, cageRequired: false, leashRequired: true, indoorAllowed: false, outdoorAllowed: true, confidence: '확실', reportCount: 0, rawText: '야외석(테라스)에 한해 반려동물 동반 가능, 목줄 필수' },
+      { id: 'f', name: '시설F', category: '레포츠', type: '대형견 놀이터', region: '경기', address: '경기 양평군 어딘가로 100', hours: '매일 09:00 - 19:00', updated: '2026.02.18', allowedSizes: ['대형'], weightLimitKg: null, cageRequired: false, leashRequired: false, indoorAllowed: false, outdoorAllowed: true, confidence: '추정', reportCount: 3, rawText: '목줄 해제 자유 활동 가능 구역, 대형견 위주 이용' },
+      { id: 'g', name: '시설G', category: '문화시설', type: '반려동반 갤러리', region: '서울', address: '서울 종로구 어딘가길 9', hours: '매일 10:00 - 18:00', updated: '2026.05.02', allowedSizes: ['소형', '중형'], weightLimitKg: 12, cageRequired: true, leashRequired: true, indoorAllowed: true, outdoorAllowed: false, confidence: '확실', reportCount: 0, rawText: '12kg 이하, 이동장 또는 유모차 이용 시 실내 관람 가능' },
+      { id: 'h', name: '시설H', category: '축제/행사', type: '반려동반 마켓', region: '경기', address: '경기 고양시 어딘가로 55', hours: '주말 11:00 - 17:00', updated: '2026.04.28', allowedSizes: ['소형', '중형', '대형'], weightLimitKg: null, cageRequired: false, leashRequired: true, indoorAllowed: false, outdoorAllowed: true, confidence: '추정', reportCount: 0, rawText: '행사장 전체 야외 진행, 목줄 착용 시 견종 제한 없이 입장' },
+    ];
+  }
+
+  computeMatch(pet, f) {
+    if (!pet) return { status: '확인필요', reasons: [] };
+    const size = this.sizeOf(pet.weight);
+    const reasons = [];
+    let hardFail = false, softIssue = false;
+    const sizeOk = f.allowedSizes.includes(size);
+    reasons.push({ label: `견종 크기: ${size}견 기준`, ok: sizeOk, confidence: f.confidence });
+    if (!sizeOk) hardFail = true;
+    if (f.weightLimitKg != null) {
+      const wOk = pet.weight <= f.weightLimitKg;
+      reasons.push({ label: `체중 제한 ${f.weightLimitKg}kg 이하`, ok: wOk, confidence: f.confidence });
+      if (!wOk) hardFail = true;
+    } else {
+      reasons.push({ label: '체중 제한 없음', ok: true, confidence: '확실' });
+    }
+    if (f.cageRequired) {
+      const cOk = !!pet.hasCage;
+      reasons.push({ label: '이동장(케이지) 필수', ok: cOk, confidence: f.confidence });
+      if (!cOk) hardFail = true;
+    }
+    if (f.leashRequired) reasons.push({ label: '목줄 착용 필수', ok: true, confidence: f.confidence });
+    reasons.push({ label: f.indoorAllowed ? '실내 동반 가능' : '실내 동반 불가', ok: true, confidence: f.confidence });
+    reasons.push({ label: f.outdoorAllowed ? '실외 동반 가능' : '실외 동반 불가', ok: true, confidence: f.confidence });
+    if (f.confidence === '추정') softIssue = true;
+    let status = hardFail ? '확인필요' : (softIssue ? '조건부가능' : '입장가능');
+    return { status, reasons };
+  }
+
+  checklistFor(f) {
+    const items = ['배변봉투', '접종증명서'];
+    if (f.leashRequired) items.push('목줄');
+    if (f.cageRequired) items.push('이동장(케이지)');
+    return items;
+  }
+
+  statusColor(status) {
+    if (status === '입장가능') return { bg: '#E3F3E9', fg: '#1F7A45' };
+    if (status === '조건부가능') return { bg: '#FDF1DD', fg: '#B4720A' };
+    return { bg: '#F0EFEC', fg: '#6B6B6E' };
+  }
+
+  push(screen) { this.setState(s => ({ screen, stack: [...s.stack, screen] })); }
+  back() {
+    this.setState(s => {
+      if (s.stack.length <= 1) return {};
+      const stack = s.stack.slice(0, -1);
+      return { stack, screen: stack[stack.length - 1] };
+    });
+  }
+  goTab(screen) { this.setState({ screen, stack: [screen] }); }
+  openDetail(id) { this.setState(s => ({ selectedId: id, screen: 'detail', stack: [...s.stack, 'detail'] })); }
+  openSearch(cat) { this.setState(s => ({ category: cat || 'all', screen: 'search', stack: [...s.stack, 'search'] })); }
+  toggleSaved(id) {
+    this.setState(s => {
+      const has = s.savedIds.includes(id);
+      return { savedIds: has ? s.savedIds.filter(x => x !== id) : [...s.savedIds, id], toast: has ? '코스에서 제거했어요' : '코스에 담았어요' };
+    });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: '' }), 1800);
+  }
+  reportFacility() {
+    this.setState({ toast: '제보가 접수되었어요. 검토 후 반영할게요' });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: '' }), 1800);
+  }
+  togglePrep(name) { this.setState(s => ({ checkedPrep: { ...s.checkedPrep, [name]: !s.checkedPrep[name] } })); }
+  addPet() {
+    this.setState(s => ({ pets: [...s.pets, { id: Date.now(), name: `반려동물 ${s.pets.length + 1}`, species: '강아지', breed: '', weight: 5, hasCage: false }] }));
+  }
+  removePet(id) { this.setState(s => ({ pets: s.pets.filter(p => p.id !== id) })); }
+  updatePet(id, patch) { this.setState(s => ({ pets: s.pets.map(p => p.id === id ? { ...p, ...patch } : p) })); }
+  setCategory(c) { this.setState({ category: c }); }
+  setListOrMap(v) { this.setState({ listOrMap: v }); }
+  setOfflineSaved(v) {
+    this.setState({ offlineSaved: v, toast: v ? '코스와 준비물을 오프라인에 저장했어요' : '오프라인 저장을 해제했어요' });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: '' }), 1800);
+  }
+
+  makeChecklistView(names) {
+    return names.map(name => {
+      const checked = !!this.state.checkedPrep[name];
+      return {
+        label: name, checked,
+        boxBg: checked ? (this.props.accentColor ?? '#1F6D52') : '#fff',
+        boxBorder: checked ? (this.props.accentColor ?? '#1F6D52') : '#DADAD4',
+        textDecoration: checked ? 'line-through' : 'none',
+        textColor: checked ? '#9A9A9E' : '#1C1C1E',
+        onToggle: () => this.togglePrep(name),
+      };
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const primary = this.props.accentColor ?? '#1F6D52';
+    const pet = s.pets[0];
+    const CATS = [{ key: '관광지', label: '관광지' }, { key: '문화시설', label: '문화시설' }, { key: '축제/행사', label: '축제/행사' }, { key: '레포츠', label: '레포츠' }, { key: '숙박', label: '숙박' }, { key: '쇼핑', label: '쇼핑' }, { key: '음식', label: '음식' }, { key: '교통', label: '교통' }];
+
+    const full = this.facilitiesData().map(f => {
+      const match = this.computeMatch(pet, f);
+      const c = this.statusColor(match.status);
+      return { ...f, match, badgeBg: c.bg, badgeFg: c.fg, alertFlag: f.reportCount >= 3, slotId: `img-${f.id}`, onOpen: () => this.openDetail(f.id) };
+    });
+
+    const filtered = s.category === 'all' ? full : (s.category === 'walk' ? full.filter(f => f.outdoorAllowed && ['관광지', '레포츠'].includes(f.category)) : full.filter(f => f.category === s.category));
+    const selected = full.find(f => f.id === s.selectedId);
+    const selectedSaved = selected ? s.savedIds.includes(selected.id) : false;
+
+    const savedFacilitiesView = full.filter(f => s.savedIds.includes(f.id)).map((f, i) => ({ ...f, order: i + 1, onRemove: () => this.toggleSaved(f.id) }));
+    const mergedNames = Array.from(new Set(savedFacilitiesView.flatMap(f => this.checklistFor(f))));
+
+    const petsView = s.pets.map(p => ({
+      ...p,
+      size: this.sizeOf(p.weight),
+      cageBg: p.hasCage ? primary : '#DADAD4',
+      cageLeft: p.hasCage ? '23px' : '3px',
+      onWeightChange: (e) => this.updatePet(p.id, { weight: Number(e.target.value) }),
+      onNameChange: (e) => this.updatePet(p.id, { name: e.target.value }),
+      onBreedChange: (e) => this.updatePet(p.id, { breed: e.target.value }),
+      onCageToggle: () => this.updatePet(p.id, { hasCage: !p.hasCage }),
+      onSpeciesToggle: () => this.updatePet(p.id, { species: p.species === '강아지' ? '고양이' : '강아지' }),
+      onRemove: () => this.removePet(p.id),
+    }));
+
+    const categoriesView = [{ key: 'all', label: '전체' }, { key: 'walk', label: '🐾 산책 친화' }, ...CATS].map(c => {
+      const active = c.key === s.category;
+      return { ...c, active, bg: active ? primary : '#fff', fg: active ? '#fff' : '#1C1C1E', border: active ? primary : '#E8E4DC', onClick: () => this.setCategory(c.key) };
+    });
+
+    const homeCategories = [{ key: 'walk', label: '🐾 산책 친화' }, ...CATS].map(c => ({ ...c, onClick: () => this.openSearch(c.key) }));
+    const regionsView = ['서울', '제주', '부산', '강릉'].map(name => ({ name, onClick: () => this.openSearch(null) }));
+
+    const selectedReasons = selected ? selected.match.reasons.map(r => ({
+      ...r, notOk: !r.ok,
+      iconBg: r.ok ? '#2FA968' : '#D64545',
+      confFg: r.confidence === '확실' ? '#1F7A45' : '#B4720A',
+    })) : [];
+    const selectedRawText = selected ? selected.rawText : '';
+    const selectedChecklist = selected ? this.makeChecklistView(this.checklistFor(selected)) : [];
+    const mergedChecklistView = this.makeChecklistView(mergedNames);
+
+    return {
+      primary, darkFrame: !!this.props.darkFrame,
+      isOnboarding: s.screen === 'onboarding', isHome: s.screen === 'home', isSearch: s.screen === 'search',
+      isDetail: s.screen === 'detail', isCourse: s.screen === 'course', isMypage: s.screen === 'mypage',
+      isOffline: s.screen === 'offline',
+      showTabBar: ['home', 'course', 'offline', 'mypage'].includes(s.screen),
+      canBack: s.stack.length > 1,
+      pet, petSize: pet ? this.sizeOf(pet.weight) : '', petInitial: pet ? pet.name.charAt(0) : '멍',
+      petsView,
+      homeCategories, regionsView,
+      openSearchAll: () => this.openSearch(null),
+      categoriesView, facilities: filtered, okCount: full.filter(f => f.match.status === '입장가능').length,
+      condCount: full.filter(f => f.match.status === '조건부가능').length, checkCount: full.filter(f => f.match.status === '확인필요').length,
+      recommendations: full.slice(0, 3),
+      isListView: s.listOrMap === 'list', isMapView: s.listOrMap === 'map',
+      listBtnBg: s.listOrMap === 'list' ? '#fff' : 'transparent', listBtnFg: s.listOrMap === 'list' ? '#1C1C1E' : '#9A9A9E',
+      mapBtnBg: s.listOrMap === 'map' ? '#fff' : 'transparent', mapBtnFg: s.listOrMap === 'map' ? '#1C1C1E' : '#9A9A9E',
+      setListOrMapList: () => this.setListOrMap('list'), setListOrMapMap: () => this.setListOrMap('map'),
+      selected, selectedReasons, selectedChecklist, selectedRawText,
+      saveBtnLabel: selectedSaved ? '코스에서 제거하기' : '코스에 담기',
+      saveBtnBg: selectedSaved ? '#F0EFEC' : primary, saveBtnFg: selectedSaved ? '#6B6B6E' : '#fff',
+      toggleSelectedSaved: () => selected && this.toggleSaved(selected.id),
+      reportFacility: () => this.reportFacility(),
+      savedCount: savedFacilitiesView.length, hasSaved: savedFacilitiesView.length > 0, noSaved: savedFacilitiesView.length === 0,
+      savedFacilitiesView, mergedChecklistView,
+      offlineSaved: s.offlineSaved,
+      offlineToggleBg: s.offlineSaved ? primary : '#DADAD4', offlineToggleLeft: s.offlineSaved ? '23px' : '3px',
+      toggleOffline: () => this.setOfflineSaved(!s.offlineSaved),
+      offlineStatusText: s.offlineSaved ? '오프라인에 저장됨 · 네트워크 없이 확인 가능' : '아직 오프라인에 저장하지 않았어요',
+      toast: s.toast, hasToast: !!s.toast,
+      tabHomeColor: s.screen === 'home' ? primary : '#9A9A9E',
+      tabCourseColor: s.screen === 'course' ? primary : '#9A9A9E',
+      tabOfflineColor: s.screen === 'offline' ? primary : '#9A9A9E',
+      tabMypageColor: s.screen === 'mypage' ? primary : '#9A9A9E',
+      back: () => this.back(),
+      goHome: () => this.goTab('home'), goCourseTab: () => this.goTab('course'), goOfflineTab: () => this.goTab('offline'), goMypageTab: () => this.goTab('mypage'),
+      finishOnboarding: () => this.goTab('home'),
+      addPet: () => this.addPet(),
+    };
+  }
+}
+</script>
+</body>
+</html>

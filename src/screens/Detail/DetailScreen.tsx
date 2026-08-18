@@ -1,12 +1,9 @@
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Pressable, Text, View } from "react-native";
 
-import type { RootStackParamList } from "../navigation/RootNavigator";
-import { useCounterStore } from "../store/exampleStore";
+import { useCounterStore } from "../../store/exampleStore";
+import type { DetailScreenProps } from "./types";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Detail">;
-
-export function DetailScreen({ navigation }: Props) {
+export function DetailScreen({ navigation }: DetailScreenProps) {
   const count = useCounterStore((state) => state.count);
 
   return (
