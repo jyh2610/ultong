@@ -1,12 +1,16 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import DetailScreen from "@/screens/Detail";
-import HomeScreen from "@/screens/Home";
+import DetailScreen from "../screens/Detail";
+import OnboardingScreen from "../screens/Onboarding";
+import SearchScreen from "../screens/Search";
+import { MainTabNavigator } from "./MainTabNavigator";
 
 export type RootStackParamList = {
-  Home: undefined;
-  Detail: undefined;
+  Onboarding: undefined;
+  MainTabs: undefined;
+  Search: { category?: string };
+  Detail: { facilityId: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -14,9 +18,11 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export function RootNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: "Home" }} />
-        <Stack.Screen name="Detail" component={DetailScreen} options={{ title: "Detail" }} />
+      <Stack.Navigator initialRouteName="Onboarding" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+        <Stack.Screen name="Search" component={SearchScreen} />
+        <Stack.Screen name="Detail" component={DetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
