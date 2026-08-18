@@ -10,7 +10,8 @@
 
 ## Global Constraints
 
-- 이 저장소에는 테스트 러너가 없다(jest 미설치). **`yarn typecheck`가 유일한 자동 검증 수단**이므로, 아래 각 태스크의 "검증" 스텝은 TDD의 "실패하는 테스트 실행" 대신 `yarn typecheck` 통과 여부로 게이트한다. UI 화면 태스크는 추가로 `npx expo export --platform ios`로 번들 스모크 테스트하고 `dist/`를 삭제한다.
+- 이 저장소에는 테스트 러너가 없다(jest 미설치). **`yarn typecheck`가 유일한 자동 검증 수단**이므로, 아래 각 태스크의 "검증" 스텝은 TDD의 "실패하는 테스트 실행" 대신 `yarn typecheck` 통과 여부로 게이트한다. **토큰 사용량을 줄이기 위해 `npx expo export` 등 번들 스모크 테스트는 태스크별 검증에서 실행하지 않는다 — 각 태스크의 검증은 `yarn typecheck` 통과만으로 완료한다** (출력이 큰 명령은 최종 리뷰 단계에서도 실행하지 않는다).
+- **UI 널뛰기 금지 (레이아웃 시프트 방지).** 데이터 페칭 중이거나 데이터가 아직 없을 때 `data ?? []` 식으로 빈 배열/빈 상태를 렌더링해 화면이 순간적으로 비었다가 데이터 도착 시 카드가 튀어나오듯 나타나는 것을 금지한다. TanStack Query의 `isPending`을 항상 확인해 로딩 중에는 최종 콘텐츠와 동일한 크기(dimensions)의 스켈레톤 UI를 렌더링하고, 데이터 도착 후 스켈레톤이 실제 카드로 "치환"되되 카드 바깥 컨테이너 크기가 바뀌지 않게 한다. **"로딩 중(isPending)"과 "실제로 데이터가 없음(empty)"은 반드시 구분**한다 — 로딩 중에 empty state를 먼저 보여줬다가 데이터가 오면 리스트로 바뀌는 것도 동일한 널뛰기이므로 금지. Task 6에서 만드는 `Skeleton`류 컴포넌트는 실제 카드/행 컴포넌트(Task 6의 `FacilityListCard` 등)와 **정확히 같은 outer 치수**를 가져야 한다.
 - 화면은 `src/screens/Xxx/`(화면당 폴더) + `index.ts` 배럴 export. 폴더 안엔 항상 `ui/`, `api/`, `constants.ts`, `types.ts`를 둔다(비어 있어도). 다른 화면에서 이 폴더 내부 파일을 직접 import하지 않는다.
 - 여러 화면에서 재사용되는 것만 `src/components/`, `src/lib/`, `src/types/`로 옮긴다 — 처음부터 만들지 않되, 아래 태스크들은 처음부터 5개 화면 이상이 공유하는 것이 확정된 항목(매칭 로직, 시설 데이터, 상태 배지 등)이므로 곧바로 공용 위치에 만든다.
 - 스타일은 `className` + NativeWind. `StyleSheet.create`는 NativeWind가 지원하지 않는 경우만.
@@ -186,7 +187,6 @@ Run: `npx expo install expo-font`
 - [ ] **Step 5: 검증**
 
 Run: `yarn typecheck` — 통과해야 함.
-Run: `npx expo export --platform ios` — 폰트 플러그인 설정 오류 없이 번들되는지 확인 후 `rm -rf dist`.
 
 (config plugin은 네이티브 프로젝트 재생성이 필요한 값이라 `expo prebuild` 전까지는 시뮬레이터에서 즉시 반영되지 않을 수 있음 — Managed workflow에서는 EAS Build/`expo run:ios` 시점에 적용됨을 팀에 공유.)
 
@@ -735,10 +735,15 @@ git commit -m "feat: restructure navigation into tab + stack"
 - Create: `src/components/SavedFacilityRow.tsx`
 - Create: `src/components/EmptyState.tsx`
 - Create: `src/components/Toast.tsx`
+- Create: `src/components/Skeleton.tsx`
+- Create: `src/components/FacilityListCardSkeleton.tsx`
+- Create: `src/components/FacilityCarouselCardSkeleton.tsx`
+- Create: `src/components/SavedFacilityRowSkeleton.tsx`
 
 **Interfaces:**
 - Consumes: `MatchStatus`, `Facility` (Task 2), `statusColor` (Task 2), `useToastStore` (Task 3)
 - Produces: 아래 각 컴포넌트의 props 시그니처 — Task 7~13이 그대로 사용한다.
+- Produces: `FacilityListCardSkeleton`, `FacilityCarouselCardSkeleton`, `SavedFacilityRowSkeleton` — Task 8/9/11/12가 `isPending` 동안 각각 `FacilityCarouselCard`/`FacilityListCard`/`SavedFacilityRow`와 **정확히 같은 outer 치수**로 렌더링한다(레이아웃 시프트 방지, Global Constraints 참고).
 
 - [ ] **Step 1: StatusBadge**
 
@@ -989,15 +994,118 @@ export function Toast() {
 }
 ```
 
-- [ ] **Step 9: 검증**
+- [ ] **Step 9: Skeleton (기본 shimmer 블록)**
 
-Run: `yarn typecheck` — `src/components/icons/CheckIcon`는 Task 14에서 만들어지므로 이 시점엔 해당 import 에러가 남는 것이 정상. 나머지 7개 파일은 에러 없어야 함.
+```tsx
+// src/components/Skeleton.tsx
+import { useEffect } from "react";
+import type { DimensionValue } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
 
-- [ ] **Step 10: 커밋**
+type SkeletonProps = {
+  width: DimensionValue;
+  height: DimensionValue;
+  radius?: number;
+};
+
+export function Skeleton({ width, height, radius = 8 }: SkeletonProps) {
+  const opacity = useSharedValue(0.5);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withTiming(1, { duration: 700, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+  }, [opacity]);
+
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+  return (
+    <Animated.View
+      className="bg-[#E8E4DC]"
+      style={[{ width, height, borderRadius: radius }, animatedStyle]}
+    />
+  );
+}
+```
+
+- [ ] **Step 10: 카드/행 스켈레톤 — Step 4~6에서 만든 실제 카드와 outer 치수를 정확히 맞춘다**
+
+```tsx
+// src/components/FacilityListCardSkeleton.tsx
+import { View } from "react-native";
+
+import { Skeleton } from "./Skeleton";
+
+export function FacilityListCardSkeleton() {
+  return (
+    <View className="mb-3 flex-row gap-3 rounded-2xl border border-card-border bg-card p-3">
+      <Skeleton width={68} height={68} radius={12} />
+      <View className="flex-1 justify-center gap-2">
+        <Skeleton width="60%" height={14} />
+        <Skeleton width="40%" height={12} />
+        <Skeleton width="30%" height={10} />
+      </View>
+    </View>
+  );
+}
+```
+
+```tsx
+// src/components/FacilityCarouselCardSkeleton.tsx
+import { View } from "react-native";
+
+import { Skeleton } from "./Skeleton";
+
+export function FacilityCarouselCardSkeleton() {
+  return (
+    <View className="w-[172px]">
+      <Skeleton width={172} height={112} radius={14} />
+      <View className="mt-2 gap-1.5">
+        <Skeleton width={60} height={16} radius={7} />
+        <Skeleton width="80%" height={14} />
+        <Skeleton width="50%" height={12} />
+      </View>
+    </View>
+  );
+}
+```
+
+```tsx
+// src/components/SavedFacilityRowSkeleton.tsx
+import { View } from "react-native";
+
+import { Skeleton } from "./Skeleton";
+
+export function SavedFacilityRowSkeleton() {
+  return (
+    <View className="mb-3 flex-row items-center gap-3 rounded-2xl border border-card-border bg-card p-3.5">
+      <Skeleton width={26} height={26} radius={8} />
+      <View className="flex-1 gap-2">
+        <Skeleton width="50%" height={14} />
+        <Skeleton width="35%" height={12} />
+      </View>
+    </View>
+  );
+}
+```
+
+- [ ] **Step 11: 검증**
+
+Run: `yarn typecheck` — `src/components/icons/CheckIcon`는 Task 14에서 만들어지므로 이 시점엔 해당 import 에러가 남는 것이 정상. 나머지 11개 파일은 에러 없어야 함.
+
+- [ ] **Step 12: 커밋**
 
 ```bash
-git add src/components/StatusBadge.tsx src/components/ToggleSwitch.tsx src/components/ChecklistItem.tsx src/components/FacilityListCard.tsx src/components/FacilityCarouselCard.tsx src/components/SavedFacilityRow.tsx src/components/EmptyState.tsx src/components/Toast.tsx
-git commit -m "feat: add shared presentational components"
+git add src/components/StatusBadge.tsx src/components/ToggleSwitch.tsx src/components/ChecklistItem.tsx src/components/FacilityListCard.tsx src/components/FacilityCarouselCard.tsx src/components/SavedFacilityRow.tsx src/components/EmptyState.tsx src/components/Toast.tsx src/components/Skeleton.tsx src/components/FacilityListCardSkeleton.tsx src/components/FacilityCarouselCardSkeleton.tsx src/components/SavedFacilityRowSkeleton.tsx
+git commit -m "feat: add shared presentational and skeleton components"
 ```
 
 ---
@@ -1188,7 +1296,8 @@ git commit -m "feat: implement onboarding screen"
 - Delete: `src/store/exampleStore.ts` (더 이상 참조하는 곳 없음)
 
 **Interfaces:**
-- Consumes: `usePetStore`(Task 3), `fetchFacilities`(Task 4), `computeMatch`(Task 2), `FacilityCarouselCard`(Task 6), `MainTabScreenProps<"Home">`(Task 5)
+- Consumes: `usePetStore`(Task 3), `fetchFacilities`(Task 4), `computeMatch`(Task 2), `FacilityCarouselCard`/`FacilityCarouselCardSkeleton`(Task 6), `MainTabScreenProps<"Home">`(Task 5)
+- 로딩 처리는 Global Constraints의 "UI 널뛰기 금지"를 따른다: `useHomeFacilities()`의 `isPending`이 true인 동안은 추천 캐러셀에 `FacilityCarouselCardSkeleton` 3개를 렌더링하고, `data ?? []`로 빈 배열을 렌더링하지 않는다.
 
 - [ ] **Step 1: 화면 타입**
 
@@ -1238,6 +1347,7 @@ export function useHomeFacilities() {
 import { FlatList, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { FacilityCarouselCard } from "../../components/FacilityCarouselCard";
+import { FacilityCarouselCardSkeleton } from "../../components/FacilityCarouselCardSkeleton";
 import { computeMatch } from "../../lib/matching";
 import { sizeOf } from "../../lib/petSize";
 import { usePetStore } from "../../store/petStore";
@@ -1245,16 +1355,19 @@ import { useHomeFacilities } from "./api/useHomeFacilities";
 import { HOME_CATEGORIES, POPULAR_REGIONS } from "./constants";
 import type { HomeScreenProps } from "./types";
 
+const SKELETON_KEYS = ["skeleton-0", "skeleton-1", "skeleton-2"];
+
 export function HomeScreen({ navigation }: HomeScreenProps) {
   const pets = usePetStore((state) => state.pets);
   const pet = pets[0];
-  const { data: facilities = [] } = useHomeFacilities();
+  const { data: facilities, isPending } = useHomeFacilities();
 
-  const recommendations = pet
-    ? facilities
-        .map((facility) => ({ facility, match: computeMatch(pet, facility) }))
-        .slice(0, 3)
-    : [];
+  const recommendations =
+    pet && facilities
+      ? facilities
+          .map((facility) => ({ facility, match: computeMatch(pet, facility) }))
+          .slice(0, 3)
+      : [];
 
   return (
     <View className="flex-1 bg-screen">
@@ -1313,20 +1426,33 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             {pet.name}({sizeOf(pet.weight)}견 · {pet.weight}kg) 기준
           </Text>
         )}
-        <FlatList
-          horizontal
-          data={recommendations}
-          keyExtractor={(item) => item.facility.id}
-          showsHorizontalScrollIndicator={false}
-          contentContainerClassName="gap-3 mb-6.5"
-          renderItem={({ item }) => (
-            <FacilityCarouselCard
-              facility={item.facility}
-              match={item.match}
-              onPress={() => navigation.getParent()?.navigate("Detail", { facilityId: item.facility.id })}
-            />
-          )}
-        />
+        {isPending ? (
+          <FlatList
+            horizontal
+            data={SKELETON_KEYS}
+            keyExtractor={(key) => key}
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="gap-3 mb-6.5"
+            renderItem={() => <FacilityCarouselCardSkeleton />}
+          />
+        ) : (
+          <FlatList
+            horizontal
+            data={recommendations}
+            keyExtractor={(item) => item.facility.id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="gap-3 mb-6.5"
+            renderItem={({ item }) => (
+              <FacilityCarouselCard
+                facility={item.facility}
+                match={item.match}
+                onPress={() =>
+                  navigation.getParent()?.navigate("Detail", { facilityId: item.facility.id })
+                }
+              />
+            )}
+          />
+        )}
         <Text className="mb-3 mt-6.5 text-[15.5px] font-bold text-ink">인기 지역</Text>
         <View className="flex-row flex-wrap gap-2">
           {POPULAR_REGIONS.map((region) => (
@@ -1377,8 +1503,9 @@ git commit -m "feat: implement home screen"
 - Create: `src/screens/Search/api/useFacilities.ts`
 
 **Interfaces:**
-- Consumes: `fetchFacilities`(Task 4), `computeMatch`(Task 2), `FacilityListCard`(Task 6), `RootStackScreenProps<"Search">`(Task 5)
+- Consumes: `fetchFacilities`(Task 4), `computeMatch`(Task 2), `FacilityListCard`/`FacilityListCardSkeleton`/`Skeleton`(Task 6), `RootStackScreenProps<"Search">`(Task 5)
 - "산책 친화" 필터는 단순 카테고리 매치가 아니라 `outdoorAllowed && (관광지 | 레포츠)` 커스텀 필터 (README "Interactions & Behavior" 참고).
+- 로딩 처리(Global Constraints "UI 널뛰기 금지"): `useFacilities()`의 `isPending`이 true인 동안 결과 리스트는 `FacilityListCardSkeleton` 4개, 헤더의 "· N곳"과 상태 요약 카운트는 숫자 대신 `Skeleton` 바로 표시한다 — `0곳`/`입장가능 0`처럼 실제 값이 아닌 숫자를 잠깐 보여줬다가 바뀌는 것도 금지 대상.
 
 - [ ] **Step 1: 화면 타입**
 
@@ -1429,18 +1556,23 @@ import { FlatList, Pressable, Text, View } from "react-native";
 
 import { BackIcon } from "../../components/icons/BackIcon";
 import { FacilityListCard } from "../../components/FacilityListCard";
+import { FacilityListCardSkeleton } from "../../components/FacilityListCardSkeleton";
+import { Skeleton } from "../../components/Skeleton";
 import { computeMatch } from "../../lib/matching";
 import { usePetStore } from "../../store/petStore";
 import { useFacilities } from "./api/useFacilities";
 import { SEARCH_CATEGORIES } from "./constants";
 import type { SearchScreenProps } from "./types";
 
+const SKELETON_KEYS = ["skeleton-0", "skeleton-1", "skeleton-2", "skeleton-3"];
+
 export function SearchScreen({ navigation, route }: SearchScreenProps) {
   const [category, setCategory] = useState(route.params?.category ?? "all");
   const pet = usePetStore((state) => state.pets[0]);
-  const { data: facilities = [] } = useFacilities();
+  const { data: facilities, isPending } = useFacilities();
 
-  const withMatch = pet ? facilities.map((f) => ({ facility: f, match: computeMatch(pet, f) })) : [];
+  const withMatch =
+    pet && facilities ? facilities.map((f) => ({ facility: f, match: computeMatch(pet, f) })) : [];
 
   const filtered = withMatch.filter(({ facility }) => {
     if (category === "all") return true;
@@ -1464,7 +1596,12 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
           <BackIcon color="#1C1C1E" />
         </Pressable>
         <Text className="flex-1 text-lg font-bold text-ink">
-          검색결과 <Text className="text-[13.5px] font-normal text-ink-soft">· {filtered.length}곳</Text>
+          검색결과{" "}
+          {isPending ? (
+            <Skeleton width={40} height={14} radius={4} />
+          ) : (
+            <Text className="text-[13.5px] font-normal text-ink-soft">· {filtered.length}곳</Text>
+          )}
         </Text>
       </View>
       <FlatList
@@ -1490,22 +1627,41 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
         }}
       />
       <View className="mb-4 flex-row flex-wrap gap-3">
-        <Text className="text-[11px] text-ink-soft">입장가능 {okCount}</Text>
-        <Text className="text-[11px] text-ink-soft">조건부가능 {condCount}</Text>
-        <Text className="text-[11px] text-ink-soft">확인필요 {checkCount}</Text>
-      </View>
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.facility.id}
-        contentContainerClassName="pb-8"
-        renderItem={({ item }) => (
-          <FacilityListCard
-            facility={item.facility}
-            match={item.match}
-            onPress={() => navigation.navigate("Detail", { facilityId: item.facility.id })}
-          />
+        {isPending ? (
+          <>
+            <Skeleton width={70} height={11} radius={4} />
+            <Skeleton width={80} height={11} radius={4} />
+            <Skeleton width={70} height={11} radius={4} />
+          </>
+        ) : (
+          <>
+            <Text className="text-[11px] text-ink-soft">입장가능 {okCount}</Text>
+            <Text className="text-[11px] text-ink-soft">조건부가능 {condCount}</Text>
+            <Text className="text-[11px] text-ink-soft">확인필요 {checkCount}</Text>
+          </>
         )}
-      />
+      </View>
+      {isPending ? (
+        <FlatList
+          data={SKELETON_KEYS}
+          keyExtractor={(key) => key}
+          contentContainerClassName="pb-8"
+          renderItem={() => <FacilityListCardSkeleton />}
+        />
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.facility.id}
+          contentContainerClassName="pb-8"
+          renderItem={({ item }) => (
+            <FacilityListCard
+              facility={item.facility}
+              match={item.match}
+              onPress={() => navigation.navigate("Detail", { facilityId: item.facility.id })}
+            />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -1540,9 +1696,11 @@ git commit -m "feat: implement search results screen"
 - Modify: `src/screens/Detail/types.ts`
 - Modify: `src/screens/Detail/constants.ts`
 - Create: `src/screens/Detail/api/useFacility.ts`
+- Create: `src/screens/Detail/ui/DetailScreenSkeleton.tsx`
 
 **Interfaces:**
-- Consumes: `fetchFacilityById`(Task 4), `computeMatch`/`checklistFor`(Task 2), `useCourseStore`/`useToastStore`(Task 3), `ChecklistItem`(Task 6), `RootStackScreenProps<"Detail">`(Task 5)
+- Consumes: `fetchFacilityById`(Task 4), `computeMatch`/`checklistFor`(Task 2), `useCourseStore`/`useToastStore`(Task 3), `ChecklistItem`/`Skeleton`(Task 6), `RootStackScreenProps<"Detail">`(Task 5)
+- 로딩 처리(Global Constraints "UI 널뛰기 금지"): `useFacility(facilityId)`의 `isPending`이 true인 동안 `return null`로 화면을 비우지 않고, 실제 레이아웃과 같은 구조의 `DetailScreenSkeleton`(이 태스크의 `ui/`에서 생성)을 렌더링한다.
 
 - [ ] **Step 1: 화면 타입**
 
@@ -1566,7 +1724,49 @@ export function useFacility(id: string) {
 }
 ```
 
-- [ ] **Step 3: DetailScreen**
+- [ ] **Step 3: DetailScreenSkeleton (화면 전용 — 이 화면의 특정 레이아웃과만 결합돼 있으므로 `ui/`에 둔다)**
+
+```tsx
+// src/screens/Detail/ui/DetailScreenSkeleton.tsx
+import { View } from "react-native";
+
+import { Skeleton } from "../../../components/Skeleton";
+
+export function DetailScreenSkeleton() {
+  return (
+    <View className="flex-1 bg-screen">
+      <Skeleton width="100%" height={210} radius={0} />
+      <View className="px-5 pt-4.5">
+        <View className="mb-3 gap-1.5">
+          <Skeleton width={120} height={11} />
+          <Skeleton width={180} height={20} />
+          <Skeleton width={100} height={12} />
+        </View>
+        <View className="mb-5.5 gap-2 rounded-2xl border border-card-border bg-card p-3.5">
+          <Skeleton width="80%" height={12} />
+          <Skeleton width="60%" height={12} />
+          <Skeleton width="50%" height={11} />
+        </View>
+        <Skeleton width={120} height={15} radius={4} />
+        <View className="mb-2 mt-2.5 rounded-2xl border border-card-border bg-card">
+          {["reason-0", "reason-1", "reason-2", "reason-3"].map((key) => (
+            <View
+              key={key}
+              className="flex-row items-center gap-2.5 border-b border-[#F4F1EA] px-3.5 py-2.5 last:border-b-0"
+            >
+              <Skeleton width={20} height={20} radius={10} />
+              <Skeleton width="60%" height={13} />
+            </View>
+          ))}
+        </View>
+        <Skeleton width="100%" height={70} radius={12} />
+      </View>
+    </View>
+  );
+}
+```
+
+- [ ] **Step 4: DetailScreen**
 
 ```tsx
 // src/screens/Detail/DetailScreen.tsx
@@ -1582,11 +1782,12 @@ import { useCourseStore } from "../../store/courseStore";
 import { usePetStore } from "../../store/petStore";
 import { useToastStore } from "../../store/toastStore";
 import { useFacility } from "./api/useFacility";
+import { DetailScreenSkeleton } from "./ui/DetailScreenSkeleton";
 import type { DetailScreenProps } from "./types";
 
 export function DetailScreen({ navigation, route }: DetailScreenProps) {
   const { facilityId } = route.params;
-  const { data: facility } = useFacility(facilityId);
+  const { data: facility, isPending } = useFacility(facilityId);
   const pet = usePetStore((state) => state.pets[0]);
   const savedIds = useCourseStore((state) => state.savedIds);
   const toggleSaved = useCourseStore((state) => state.toggleSaved);
@@ -1594,7 +1795,8 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
   const togglePrep = useCourseStore((state) => state.togglePrep);
   const showToast = useToastStore((state) => state.show);
 
-  if (!facility || !pet) return null;
+  if (isPending || !pet) return <DetailScreenSkeleton />;
+  if (!facility) return null;
 
   const match = computeMatch(pet, facility);
   const checklist = checklistFor(facility);
@@ -1711,13 +1913,13 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
 }
 ```
 
-- [ ] **Step 4: constants.ts는 이 화면엔 상수가 없으므로 빈 파일 유지, index.ts는 기존 그대로**
+- [ ] **Step 5: constants.ts는 이 화면엔 상수가 없으므로 빈 파일 유지, index.ts는 기존 그대로**
 
-- [ ] **Step 5: 검증**
+- [ ] **Step 6: 검증**
 
 Run: `yarn typecheck`
 
-- [ ] **Step 6: 커밋**
+- [ ] **Step 7: 커밋**
 
 ```bash
 git add src/screens/Detail
@@ -1735,7 +1937,8 @@ git commit -m "feat: implement facility detail screen"
 - Create: `src/screens/Course/api/useCourseFacilities.ts`
 
 **Interfaces:**
-- Consumes: `useCourseStore`(Task 3), `fetchFacilities`(Task 4), `computeMatch`/`mergeChecklists`(Task 2), `SavedFacilityRow`/`ChecklistItem`/`EmptyState`(Task 6)
+- Consumes: `useCourseStore`(Task 3), `fetchFacilities`(Task 4), `computeMatch`/`mergeChecklists`(Task 2), `SavedFacilityRow`/`SavedFacilityRowSkeleton`/`ChecklistItem`/`EmptyState`(Task 6)
+- 로딩 처리(Global Constraints "UI 널뛰기 금지"): `isPending` 동안에는 `saved.length === 0`이 우연히 참이어도 **EmptyState를 먼저 보여줬다가 데이터 도착 후 리스트로 바뀌는 것을 금지**한다 — `isPending`을 empty 판정보다 먼저 확인해 스켈레톤 리스트를 렌더링한다.
 
 - [ ] **Step 1: 화면 타입**
 
@@ -1768,11 +1971,14 @@ import { FlatList, Text, View } from "react-native";
 import { ChecklistItem } from "../../components/ChecklistItem";
 import { EmptyState } from "../../components/EmptyState";
 import { SavedFacilityRow } from "../../components/SavedFacilityRow";
+import { SavedFacilityRowSkeleton } from "../../components/SavedFacilityRowSkeleton";
 import { computeMatch, mergeChecklists } from "../../lib/matching";
 import { useCourseStore } from "../../store/courseStore";
 import { usePetStore } from "../../store/petStore";
 import { useCourseFacilities } from "./api/useCourseFacilities";
 import type { CourseScreenProps } from "./types";
+
+const SKELETON_KEYS = ["skeleton-0", "skeleton-1"];
 
 export function CourseScreen({ navigation }: CourseScreenProps) {
   const pet = usePetStore((state) => state.pets[0]);
@@ -1780,10 +1986,23 @@ export function CourseScreen({ navigation }: CourseScreenProps) {
   const toggleSaved = useCourseStore((state) => state.toggleSaved);
   const checkedPrep = useCourseStore((state) => state.checkedPrep);
   const togglePrep = useCourseStore((state) => state.togglePrep);
-  const { data: facilities = [] } = useCourseFacilities();
+  const { data: facilities, isPending } = useCourseFacilities();
 
-  const saved = facilities.filter((f) => savedIds.includes(f.id));
+  const saved = facilities ? facilities.filter((f) => savedIds.includes(f.id)) : [];
   const mergedChecklist = mergeChecklists(saved);
+
+  if (isPending) {
+    return (
+      <View className="flex-1 bg-screen px-5 pt-4">
+        <Text className="mb-1 text-lg font-bold text-ink">내 여행 코스</Text>
+        <FlatList
+          data={SKELETON_KEYS}
+          keyExtractor={(key) => key}
+          renderItem={() => <SavedFacilityRowSkeleton />}
+        />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-screen px-5 pt-4">
@@ -1863,7 +2082,8 @@ git commit -m "feat: implement course screen"
 - Create: `src/screens/Offline/api/useOfflineFacilities.ts`
 
 **Interfaces:**
-- Consumes: `useOfflineStore`(Task 3), `useCourseStore`(Task 3), `fetchFacilities`(Task 4), `mergeChecklists`(Task 2), `ToggleSwitch`/`ChecklistItem`/`EmptyState`(Task 6)
+- Consumes: `useOfflineStore`(Task 3), `useCourseStore`(Task 3), `fetchFacilities`(Task 4), `mergeChecklists`(Task 2), `ToggleSwitch`/`ChecklistItem`/`EmptyState`/`SavedFacilityRowSkeleton`(Task 6)
+- 로딩 처리(Global Constraints "UI 널뛰기 금지"): Task 11(코스 화면)과 동일하게 `isPending`을 empty 판정보다 먼저 확인해 스켈레톤 리스트를 렌더링한다.
 
 **주의 (범위 확인 필요):** README는 이 토글을 "기기에 저장"이라 부르지만 실제 로컬 영속화(AsyncStorage 등)는 프로토타입에 없다. 이 태스크는 프로토타입과 동일하게 **인메모리 `offlineSaved` 플래그**만 구현한다 — 앱 재시작 시에도 유지되는 실제 오프라인 저장은 스코프 밖이며 별도 태스크로 분리해야 한다(팀 확인 필요, Global Constraints 참고).
 
@@ -1898,6 +2118,7 @@ import { FlatList, Text, View } from "react-native";
 import { ChecklistItem } from "../../components/ChecklistItem";
 import { EmptyState } from "../../components/EmptyState";
 import { SavedFacilityRow } from "../../components/SavedFacilityRow";
+import { SavedFacilityRowSkeleton } from "../../components/SavedFacilityRowSkeleton";
 import { ToggleSwitch } from "../../components/ToggleSwitch";
 import { computeMatch, mergeChecklists } from "../../lib/matching";
 import { useCourseStore } from "../../store/courseStore";
@@ -1906,6 +2127,8 @@ import { usePetStore } from "../../store/petStore";
 import { useOfflineFacilities } from "./api/useOfflineFacilities";
 import type { OfflineScreenProps } from "./types";
 
+const SKELETON_KEYS = ["skeleton-0", "skeleton-1"];
+
 export function OfflineScreen(_props: OfflineScreenProps) {
   const pet = usePetStore((state) => state.pets[0]);
   const savedIds = useCourseStore((state) => state.savedIds);
@@ -1913,9 +2136,9 @@ export function OfflineScreen(_props: OfflineScreenProps) {
   const togglePrep = useCourseStore((state) => state.togglePrep);
   const offlineSaved = useOfflineStore((state) => state.offlineSaved);
   const setOfflineSaved = useOfflineStore((state) => state.setOfflineSaved);
-  const { data: facilities = [] } = useOfflineFacilities();
+  const { data: facilities, isPending } = useOfflineFacilities();
 
-  const saved = facilities.filter((f) => savedIds.includes(f.id));
+  const saved = facilities ? facilities.filter((f) => savedIds.includes(f.id)) : [];
   const mergedChecklist = mergeChecklists(saved);
 
   return (
@@ -1933,7 +2156,13 @@ export function OfflineScreen(_props: OfflineScreenProps) {
         </View>
         <ToggleSwitch value={offlineSaved} onToggle={() => setOfflineSaved(!offlineSaved)} />
       </View>
-      {saved.length === 0 || !pet ? (
+      {isPending ? (
+        <FlatList
+          data={SKELETON_KEYS}
+          keyExtractor={(key) => key}
+          renderItem={() => <SavedFacilityRowSkeleton />}
+        />
+      ) : saved.length === 0 || !pet ? (
         <EmptyState
           title="저장할 코스가 아직 없어요"
           description={"코스 탭에서 시설을 담으면\n여기서 오프라인으로 저장할 수 있어요"}
@@ -2278,7 +2507,6 @@ export function TabMypageIcon({ color }: { color: string }) {
 - [ ] **Step 3: 검증**
 
 Run: `yarn typecheck` — Task 5/6/9/10에서 남아있던 아이콘 import 에러가 모두 해소되어야 함.
-Run: `npx expo export --platform ios` — 전체 앱 스모크 번들 확인 후 `rm -rf dist`.
 
 - [ ] **Step 4: 커밋**
 
@@ -2307,3 +2535,4 @@ git commit -m "feat: add svg icon set"
 **Spec coverage:** README의 화면 1~7(온보딩/홈/검색결과/상세/코스/오프라인/마이페이지), 네비게이션(탭 4개+스택), Interactions(체중 슬라이더 전역 재계산=Zustand, 토스트 1.8초, 산책친화 커스텀 필터, 뒤로가기 스택), State Management(pets/savedIds/checkedPrep/offlineSaved 전부 스토어화, 시설 데이터+매칭 로직), Data Requirements(목업→실API 분리 지점), Assets(SVG 아이콘, Pretendard 폰트) 모두 위 15개 태스크로 매핑됨. Design Tokens는 Task 1에서 전량 반영.
 **Placeholder scan:** "TBD/나중에" 식 표현 없음. Task 12(오프라인 실제 영속화)와 Task 13(계정 메뉴 동작), Task 15(실 API)는 README 자체가 "팀 확인 필요"라 명시한 항목이라 의도적으로 스코프 밖으로 명시하고 별도 후속 태스크로 분리했다(placeholder 코드가 아니라 범위 배제).
 **Type consistency:** `Facility`/`Pet`/`MatchResult`/`MatchStatus`(Task 2)가 Task 3~13 전체에서 동일한 이름·필드로 재사용됨을 확인. `RootStackScreenProps`/`MainTabScreenProps`(Task 5)가 Task 7~13의 모든 `types.ts`에서 동일하게 사용됨을 확인. 아이콘 컴포넌트 props `{ color: string }`이 Task 5/6/9/10의 사용부와 Task 14의 정의부에서 일치함을 확인.
+**UI 널뛰기 재확인 (사용자 피드백 반영):** Task 8/9/11/12에서 `data ?? []` 패턴을 전부 `isPending` 분기로 교체했고, `FacilityCarouselCardSkeleton`/`FacilityListCardSkeleton`/`SavedFacilityRowSkeleton`(Task 6)이 각각 대응하는 실제 카드/행과 동일한 outer 치수를 갖는지 확인. Task 10은 기존 `if (!facility || !pet) return null` 대신 `DetailScreenSkeleton`으로 교체. Task 11/12는 로딩 중 `EmptyState`가 먼저 보였다가 리스트로 바뀌는 경로를 제거하기 위해 `isPending` 분기를 empty 판정보다 앞에 뒀는지 확인. 토큰 절약을 위해 태스크별 검증에서 `expo export` 등 번들 스모크 테스트를 제거하고 `yarn typecheck` 단일 게이트로 통일.
