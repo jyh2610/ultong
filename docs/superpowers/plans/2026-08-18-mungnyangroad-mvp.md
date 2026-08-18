@@ -1115,14 +1115,14 @@ git commit -m "feat: add shared presentational and skeleton components"
 **Files:**
 - Create: `src/screens/Onboarding/index.ts`
 - Create: `src/screens/Onboarding/OnboardingScreen.tsx`
-- Create: `src/screens/Onboarding/ui/PetProfileCard.tsx`
+- Create: `src/components/PetProfileCard.tsx` (Task 13/마이페이지도 그대로 재사용하므로 화면 폴더가 아니라 처음부터 공용 위치에 둔다)
 - Create: `src/screens/Onboarding/types.ts`
 - Create: `src/screens/Onboarding/constants.ts` (빈 상수 파일 — 화면 전용 상수 생기면 채움)
 - Create: `src/screens/Onboarding/api/` (빈 디렉토리 — 화면 전용 API 없음, `.gitkeep`)
 
 **Interfaces:**
 - Consumes: `usePetStore` (Task 3), `sizeOf` (Task 2), `RootStackScreenProps<"Onboarding">` (Task 5)
-- Produces: `OnboardingScreen` default export via `index.ts`
+- Produces: `OnboardingScreen` default export via `index.ts`, `PetProfileCard` component that Task 13(마이페이지)도 그대로 import한다.
 
 - [ ] **Step 1: 화면 타입**
 
@@ -1133,7 +1133,7 @@ import type { RootStackScreenProps } from "../../navigation/types";
 export type OnboardingScreenProps = RootStackScreenProps<"Onboarding">;
 ```
 
-- [ ] **Step 2: PetProfileCard (온보딩/마이페이지 공용 — 두 화면에서 쓰므로 애초에 각 화면 폴더가 아니라 공용으로 둘지 고민했으나, 두 화면의 카드 사이즈/여백이 살짝 다르므로 우선 Onboarding 소유로 만들고 MyPage(Task 13)에서 동일 컴포넌트를 import해 재사용한다 — 이 시점부터 재사용이 확정이므로 실제로는 `src/components/PetProfileCard.tsx`가 맞다.)**
+- [ ] **Step 2: PetProfileCard (온보딩과 마이페이지 두 화면이 동일하게 쓰는 공용 컴포넌트이므로 `src/components/`에 만든다)**
 
 ```tsx
 // src/components/PetProfileCard.tsx
@@ -1266,12 +1266,21 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
 }
 ```
 
-- [ ] **Step 5: index.ts**
+- [ ] **Step 5: index.ts + 빈 스캐폴드(constants.ts, api/)**
+
+CLAUDE.md의 화면 폴더 규칙상 `constants.ts`/`api/`는 비어 있어도 항상 존재해야 한다. 이 화면은 아직 전용 상수/API가 없으므로 빈 채로 만든다.
 
 ```ts
 // src/screens/Onboarding/index.ts
 export { OnboardingScreen as default } from "./OnboardingScreen";
 ```
+
+```ts
+// src/screens/Onboarding/constants.ts
+export {};
+```
+
+Run: `mkdir -p src/screens/Onboarding/api && touch src/screens/Onboarding/api/.gitkeep`
 
 - [ ] **Step 6: 검증**
 
