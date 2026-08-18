@@ -83,7 +83,6 @@ src/
 - Modify: `tailwind.config.js`
 - Modify: `app.json`
 - Create: `assets/fonts/Pretendard-Regular.otf`, `assets/fonts/Pretendard-SemiBold.otf`, `assets/fonts/Pretendard-Bold.otf`
-- Modify: `App.tsx`
 
 **Interfaces:**
 - Produces: Tailwind 색상 토큰 `primary`, `frame`, `screen`, `ink`, `ink-soft`, `ink-faint`, `card`, `card-border`, `card-border-alt`, `status-ok-bg`, `status-ok-fg`, `status-conditional-bg`, `status-conditional-fg`, `status-check-bg`, `status-check-fg`, `alert-bg`, `alert-border`, `alert-text`, `quote-bg`, `quote-border`, `quote-text`. 이후 모든 태스크가 이 이름을 그대로 className에서 사용한다(예: `bg-primary`, `text-ink-soft`).
@@ -581,7 +580,6 @@ git commit -m "feat: add mock facility data source"
 - Modify: `src/navigation/RootNavigator.tsx`
 - Create: `src/navigation/MainTabNavigator.tsx`
 - Create: `src/navigation/types.ts`
-- Modify: `App.tsx`
 
 **Interfaces:**
 - Produces: `RootStackParamList` — `Onboarding: undefined; MainTabs: undefined; Search: { category?: string }; Detail: { facilityId: string }`
