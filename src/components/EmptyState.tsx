@@ -1,0 +1,15 @@
+import { Text, View } from "react-native";
+
+type EmptyStateProps = {
+  title: string;
+  description: string;
+};
+
+export function EmptyState({ title, description }: EmptyStateProps) {
+  return (
+    <View className="items-center px-5 py-16">
+      <Text className="mb-1.5 text-[13.5px] text-ink-faint">{title}</Text>
+      <Text className="text-center text-xs leading-5 text-ink-faint">{description}</Text>
+    </View>
+  );
+}
