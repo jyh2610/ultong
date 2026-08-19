@@ -722,6 +722,52 @@ git commit -m "feat: restructure navigation into tab + stack"
 
 ---
 
+### Task 5.5: 시설 카테고리 체계 수정 (기획서 반영 — 8종 → 5종)
+
+**배경:** 기획서에 따르면 실제 반려동물 동반여행 API 응답을 확인한 결과 `cat1~3`·`areacode` 필드가 비어 있고, 축제/여행코스 카테고리는 데이터 0건, 쇼핑은 89%가 일반 동네 상점(관광 목적 시설 아님)으로 확인되어 카테고리 탭을 관광지·문화시설·레포츠·숙박·음식 5종으로 축소하기로 했다. Task 2(타입)·Task 4(목업 데이터)가 이미 8종 체계로 커밋되어 있으므로, 이 태스크에서 두 파일만 5종에 맞게 보정한다.
+
+**Files:**
+- Modify: `src/types/facility.ts` (Task 2에서 생성, 이미 커밋됨)
+- Modify: `src/lib/facilities.ts` (Task 4에서 생성, 이미 커밋됨)
+
+**Interfaces:**
+- Consumes: 기존 `Facility`, `FacilityCategory`(Task 2), `MOCK_FACILITIES`(Task 4)
+- Produces: `FacilityCategory`(5종으로 축소) — Task 8(홈)·Task 9(검색)의 카테고리 탭 상수와 Task 15(실 API 연동)의 매핑 로직이 이 5종을 기준으로 한다.
+
+- [ ] **Step 1: `FacilityCategory` 5종으로 축소**
+
+```ts
+// src/types/facility.ts — FacilityCategory 유니온만 교체, 나머지 타입 정의는 그대로 유지
+export type FacilityCategory = "관광지" | "문화시설" | "레포츠" | "숙박" | "음식";
+```
+
+(기존 8종 중 `"축제/행사"`·`"쇼핑"`·`"교통"`을 제거한다 — 실제 API 응답에서 데이터가 없거나(축제/여행코스 0건) 관광 목적 시설이 아닌 것으로(쇼핑 89%가 일반 상점) 확인됐기 때문. "쇼핑"은 향후 시설 상세 화면의 "주변 편의시설" 정보로만 다룰 후보로 남기되, 이번 태스크·이번 MVP 스코프에는 포함하지 않는다 — 별도 후속 태스크로 분리.)
+
+- [ ] **Step 2: 목업 데이터 중 유효 범위를 벗어난 2개 항목만 category 보정**
+
+`src/lib/facilities.ts`의 `MOCK_FACILITIES` 배열에서 id `"d"`와 id `"h"` 두 줄을 아래로 교체한다(다른 필드는 그대로, `category`만 `"관광지"`로 변경):
+
+```ts
+  { id: "d", name: "시설D", category: "관광지", type: "편집숍", region: "서울", address: "서울 성동구 어딘가길 3", hours: "매일 11:00 - 20:00", updated: "2026.06.15", allowedSizes: ["소형", "중형", "대형"], weightLimitKg: null, cageRequired: true, leashRequired: false, indoorAllowed: true, outdoorAllowed: false, confidence: "확실", reportCount: 0, rawText: "이동장(케이지) 착용 시에만 매장 내 동반 가능" },
+```
+
+```ts
+  { id: "h", name: "시설H", category: "관광지", type: "반려동반 마켓", region: "경기", address: "경기 고양시 어딘가로 55", hours: "주말 11:00 - 17:00", updated: "2026.04.28", allowedSizes: ["소형", "중형", "대형"], weightLimitKg: null, cageRequired: false, leashRequired: true, indoorAllowed: false, outdoorAllowed: true, confidence: "추정", reportCount: 0, rawText: "행사장 전체 야외 진행, 목줄 착용 시 견종 제한 없이 입장" },
+```
+
+- [ ] **Step 3: 검증**
+
+Run: `yarn typecheck` — 통과해야 함(이 시점엔 아직 카테고리 탭 상수를 쓰는 화면이 없으므로 이 두 파일만 에러 없으면 됨).
+
+- [ ] **Step 4: 커밋**
+
+```bash
+git add src/types/facility.ts src/lib/facilities.ts
+git commit -m "fix: narrow facility category taxonomy to 5 tabs per proposal data findings"
+```
+
+---
+
 ### Task 6: 공용 프레젠테이션 컴포넌트 구현
 
 **Files:**
@@ -1319,16 +1365,15 @@ export type HomeScreenProps = MainTabScreenProps<"Home">;
 
 ```ts
 // src/screens/Home/constants.ts
+// 카테고리 탭은 5종(관광지·문화시설·레포츠·숙박·음식)만 노출한다 — Task 5.5 참고
+// (축제/행사·쇼핑·교통은 실 API 데이터 검증 결과 메인 탭에서 제외됨).
 export const HOME_CATEGORIES = [
   { key: "walk", label: "🐾 산책 친화" },
   { key: "관광지", label: "관광지" },
   { key: "문화시설", label: "문화시설" },
-  { key: "축제/행사", label: "축제/행사" },
   { key: "레포츠", label: "레포츠" },
   { key: "숙박", label: "숙박" },
-  { key: "쇼핑", label: "쇼핑" },
   { key: "음식", label: "음식" },
-  { key: "교통", label: "교통" },
 ] as const;
 
 export const POPULAR_REGIONS = ["서울", "제주", "부산", "강릉"] as const;
@@ -1527,17 +1572,16 @@ export type SearchScreenProps = RootStackScreenProps<"Search">;
 
 ```ts
 // src/screens/Search/constants.ts
+// 카테고리 탭은 5종(관광지·문화시설·레포츠·숙박·음식)만 노출한다 — Task 5.5 참고
+// (축제/행사·쇼핑·교통은 실 API 데이터 검증 결과 메인 탭에서 제외됨).
 export const SEARCH_CATEGORIES = [
   { key: "all", label: "전체" },
   { key: "walk", label: "🐾 산책 친화" },
   { key: "관광지", label: "관광지" },
   { key: "문화시설", label: "문화시설" },
-  { key: "축제/행사", label: "축제/행사" },
   { key: "레포츠", label: "레포츠" },
   { key: "숙박", label: "숙박" },
-  { key: "쇼핑", label: "쇼핑" },
   { key: "음식", label: "음식" },
-  { key: "교통", label: "교통" },
 ] as const;
 ```
 
@@ -2530,7 +2574,9 @@ git commit -m "feat: add svg icon set"
 
 **연동 시점에 해야 할 일 (합의된 계약이 생기면 이 섹션을 bite-sized 태스크로 다시 쪼갤 것):**
 - `src/lib/facilities.ts`의 `fetchFacilities`/`fetchFacilityById` 내부만 `apiFetch<Facility[]>("/facilities")`/`apiFetch<Facility>(`/facilities/${id}`)` 호출로 교체 (화면 쪽 코드는 무변경 — Task 4에서 설계한 분리 지점).
-- API의 `contenttypeid` 8종(관광지/문화시설/축제행사/레포츠/숙박/쇼핑/음식/교통)을 `FacilityCategory`(Task 2) 8종과 1:1 매핑하는 변환 함수 추가.
+- API의 `lclsSystm`(대/중/소분류 코드) 값을 `FacilityCategory`(Task 5.5에서 5종으로 축소) 중 하나로 매핑하는 변환 함수 추가. `cat1~3`/`contenttypeid`는 실제 응답에서 비어있거나(cat1~3) 카테고리 실익이 없는 것으로 확인되어(축제/여행코스 0건, 쇼핑 89%가 비관광 상점) 매핑 기준에서 제외한다. 매핑 결과가 5종 중 어디에도 속하지 않으면(주로 쇼핑류) 메인 목록에 노출하지 않고 시설 상세의 "주변 편의시설" 섹션 후보로만 남긴다 — 이 섹션 자체는 별도 후속 태스크(이번 MVP 스코프 밖).
+- `Facility.region`(현재 평문 문자열)을 법정동코드 기준 시/도 → 시군구 계층 선택에 대응하도록 확장 — `areacode`가 비어있어 지역 필터가 드롭다운 2단 구조로 바뀌므로, `Home`/`Search`의 지역 관련 UI(POPULAR_REGIONS 등)와 스키마 영향 범위를 백엔드와 재확인 필요.
+- 위치 기반 반경 검색("내 주변" 버튼, Home 화면에 이미 자리만 있음)은 사용자 좌표를 서버로 보내지 않고 클라이언트에서 로컬로 거리 계산·정렬하는 방식을 우선 검토한다 — 위치기반서비스사업자 신고 대상 여부가 서버(ES) 측 `geo_distance` 처리 여부에 따라 갈리므로, 서버 반경 검색을 도입하려면 사전에 팀 확인이 필요.
 - 이미지 URL 필드를 `Facility`에 추가하고 `FacilityListCard`/`FacilityCarouselCard`/상세 화면의 placeholder 박스를 실제 이미지 컴포넌트로 교체.
 - `reportCount` 임계값(현재 3, 목업값)을 백엔드 정책값으로 교체.
 - TanStack Query의 `queryClient`(이미 세팅됨, `src/lib/queryClient.ts`) 기본 `staleTime`이 실 API 트래픽 패턴에 맞는지 재검토.
@@ -2539,7 +2585,7 @@ git commit -m "feat: add svg icon set"
 
 ## Self-Review
 
-**Spec coverage:** README의 화면 1~7(온보딩/홈/검색결과/상세/코스/오프라인/마이페이지), 네비게이션(탭 4개+스택), Interactions(체중 슬라이더 전역 재계산=Zustand, 토스트 1.8초, 산책친화 커스텀 필터, 뒤로가기 스택), State Management(pets/savedIds/checkedPrep/offlineSaved 전부 스토어화, 시설 데이터+매칭 로직), Data Requirements(목업→실API 분리 지점), Assets(SVG 아이콘, Pretendard 폰트) 모두 위 15개 태스크로 매핑됨. Design Tokens는 Task 1에서 전량 반영.
+**Spec coverage:** README의 화면 1~7(온보딩/홈/검색결과/상세/코스/오프라인/마이페이지), 네비게이션(탭 4개+스택), Interactions(체중 슬라이더 전역 재계산=Zustand, 토스트 1.8초, 산책친화 커스텀 필터, 뒤로가기 스택), State Management(pets/savedIds/checkedPrep/offlineSaved 전부 스토어화, 시설 데이터+매칭 로직), Data Requirements(목업→실API 분리 지점), Assets(SVG 아이콘, Pretendard 폰트) 모두 위 16개 태스크(Task 5.5 포함)로 매핑됨. Design Tokens는 Task 1에서 전량 반영. 공모전 기획서(2026-08-19 기준)의 카테고리 축소(8종→5종) 반영은 Task 5.5 + Task 8/9의 카테고리 상수 수정 + Task 15의 API 매핑 설명 수정으로 커버됨.
 **Placeholder scan:** "TBD/나중에" 식 표현 없음. Task 12(오프라인 실제 영속화)와 Task 13(계정 메뉴 동작), Task 15(실 API)는 README 자체가 "팀 확인 필요"라 명시한 항목이라 의도적으로 스코프 밖으로 명시하고 별도 후속 태스크로 분리했다(placeholder 코드가 아니라 범위 배제).
 **Type consistency:** `Facility`/`Pet`/`MatchResult`/`MatchStatus`(Task 2)가 Task 3~13 전체에서 동일한 이름·필드로 재사용됨을 확인. `RootStackScreenProps`/`MainTabScreenProps`(Task 5)가 Task 7~13의 모든 `types.ts`에서 동일하게 사용됨을 확인. 아이콘 컴포넌트 props `{ color: string }`이 Task 5/6/9/10의 사용부와 Task 14의 정의부에서 일치함을 확인.
 **UI 널뛰기 재확인 (사용자 피드백 반영):** Task 8/9/11/12에서 `data ?? []` 패턴을 전부 `isPending` 분기로 교체했고, `FacilityCarouselCardSkeleton`/`FacilityListCardSkeleton`/`SavedFacilityRowSkeleton`(Task 6)이 각각 대응하는 실제 카드/행과 동일한 outer 치수를 갖는지 확인. Task 10은 기존 `if (!facility || !pet) return null` 대신 `DetailScreenSkeleton`으로 교체. Task 11/12는 로딩 중 `EmptyState`가 먼저 보였다가 리스트로 바뀌는 경로를 제거하기 위해 `isPending` 분기를 empty 판정보다 앞에 뒀는지 확인. 토큰 절약을 위해 태스크별 검증에서 `expo export` 등 번들 스모크 테스트를 제거하고 `yarn typecheck` 단일 게이트로 통일.
