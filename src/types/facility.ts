@@ -1,14 +1,6 @@
 import type { PetSize } from "./pet";
 
-export type FacilityCategory =
-  | "관광지"
-  | "문화시설"
-  | "축제/행사"
-  | "레포츠"
-  | "숙박"
-  | "쇼핑"
-  | "음식"
-  | "교통";
+export type FacilityCategory = "관광지" | "문화시설" | "레포츠" | "숙박" | "음식";
 
 export type Confidence = "확실" | "추정";
 export type MatchStatus = "입장가능" | "조건부가능" | "확인필요";
