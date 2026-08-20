@@ -1,5 +1,6 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
+import { Text } from "./AppText";
 import { statusColor } from "../lib/statusColor";
 import type { MatchStatus } from "../types/facility";
 

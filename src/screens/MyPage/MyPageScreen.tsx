@@ -1,6 +1,7 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Text } from "../../components/AppText";
 import { PetProfileCard } from "../../components/PetProfileCard";
 import { usePetStore } from "../../store/petStore";
 import { useToastStore } from "../../store/toastStore";

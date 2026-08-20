@@ -1,5 +1,6 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
+import { Text } from "./AppText";
 import { StatusBadge } from "./StatusBadge";
 import type { Facility, MatchResult } from "../types/facility";
 

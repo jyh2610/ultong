@@ -1,5 +1,6 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
+import { Text } from "./AppText";
 import { CheckIcon } from "./icons/CheckIcon";
 
 type ChecklistItemProps = {

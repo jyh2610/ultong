@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackIcon } from "../../components/icons/BackIcon";
+import { Text } from "../../components/AppText";
 import { FacilityListCard } from "../../components/FacilityListCard";
 import { FacilityListCardSkeleton } from "../../components/FacilityListCardSkeleton";
 import { Skeleton } from "../../components/Skeleton";

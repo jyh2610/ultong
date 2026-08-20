@@ -1,6 +1,8 @@
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, View } from "react-native";
 import Slider from "@react-native-community/slider";
 
+import { Text } from "./AppText";
+import { TextInput } from "./AppTextInput";
 import { ToggleSwitch } from "./ToggleSwitch";
 import { sizeOf } from "../lib/petSize";
 import type { Pet } from "../types/pet";

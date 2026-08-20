@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { Text } from "react-native";
 
+import { Text } from "./AppText";
 import { useToastStore } from "../store/toastStore";
 
 export function Toast() {

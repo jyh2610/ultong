@@ -1,6 +1,8 @@
-import { FlatList, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Text } from "../../components/AppText";
+import { TextInput } from "../../components/AppTextInput";
 import { FacilityCarouselCard } from "../../components/FacilityCarouselCard";
 import { FacilityCarouselCardSkeleton } from "../../components/FacilityCarouselCardSkeleton";
 import { computeMatch } from "../../lib/matching";

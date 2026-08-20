@@ -1,9 +1,10 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackIcon } from "../../components/icons/BackIcon";
 import { CheckIcon } from "../../components/icons/CheckIcon";
 import { CloseIcon } from "../../components/icons/CloseIcon";
+import { Text } from "../../components/AppText";
 import { ChecklistItem } from "../../components/ChecklistItem";
 import { StatusBadge } from "../../components/StatusBadge";
 import { checklistFor, computeMatch } from "../../lib/matching";

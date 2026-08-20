@@ -1,6 +1,7 @@
-import { FlatList, Text, View } from "react-native";
+import { FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Text } from "../../components/AppText";
 import { ChecklistItem } from "../../components/ChecklistItem";
 import { EmptyState } from "../../components/EmptyState";
 import { SavedFacilityRow } from "../../components/SavedFacilityRow";
