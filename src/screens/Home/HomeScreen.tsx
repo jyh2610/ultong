@@ -1,4 +1,5 @@
 import { FlatList, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FacilityCarouselCard } from "../../components/FacilityCarouselCard";
 import { FacilityCarouselCardSkeleton } from "../../components/FacilityCarouselCardSkeleton";
@@ -15,6 +16,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   const pets = usePetStore((state) => state.pets);
   const pet = pets[0];
   const { data: facilities, isPending } = useHomeFacilities();
+  const insets = useSafeAreaInsets();
 
   const recommendations =
     pet && facilities
@@ -24,7 +26,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       : [];
 
   return (
-    <View className="flex-1 bg-screen">
+    <View className="flex-1 bg-screen" style={{ paddingTop: insets.top }}>
       <ScrollView contentContainerClassName="px-5 pb-8 pt-4">
         <View className="mb-4.5 flex-row items-start justify-between">
           <View>

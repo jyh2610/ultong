@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackIcon } from "../../components/icons/BackIcon";
 import { CheckIcon } from "../../components/icons/CheckIcon";
@@ -22,6 +23,7 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
   const checkedPrep = useCourseStore((state) => state.checkedPrep);
   const togglePrep = useCourseStore((state) => state.togglePrep);
   const showToast = useToastStore((state) => state.show);
+  const insets = useSafeAreaInsets();
 
   if (isPending || !pet) return <DetailScreenSkeleton />;
   if (!facility) return null;
@@ -38,7 +40,8 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
           <View className="h-[210px] bg-[#EEE9E0]" />
           <Pressable
             onPress={() => navigation.goBack()}
-            className="absolute left-3.5 top-3.5 h-[34px] w-[34px] items-center justify-center rounded-full bg-white/90"
+            className="absolute left-3.5 h-[34px] w-[34px] items-center justify-center rounded-full bg-white/90"
+            style={{ top: insets.top + 14 }}
           >
             <BackIcon color="#1C1C1E" />
           </Pressable>
@@ -123,7 +126,7 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
           </Pressable>
         </View>
       </ScrollView>
-      <View className="px-5 pb-6.5 pt-3">
+      <View className="px-5 pt-3" style={{ paddingBottom: insets.bottom + 26 }}>
         <Pressable
           onPress={() => {
             const nowSaved = toggleSaved(facility.id);

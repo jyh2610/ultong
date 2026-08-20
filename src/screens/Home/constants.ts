@@ -1,3 +1,5 @@
+import type { FacilityCategory } from "../../types/facility";
+
 // 카테고리 탭은 5종(관광지·문화시설·레포츠·숙박·음식)만 노출한다 — Task 5.5 참고
 // (축제/행사·쇼핑·교통은 실 API 데이터 검증 결과 메인 탭에서 제외됨).
 export const HOME_CATEGORIES = [
@@ -7,6 +9,6 @@ export const HOME_CATEGORIES = [
   { key: "레포츠", label: "레포츠" },
   { key: "숙박", label: "숙박" },
   { key: "음식", label: "음식" },
-] as const;
+] as const satisfies { key: FacilityCategory | "walk"; label: string }[];
 
 export const POPULAR_REGIONS = ["서울", "제주", "부산", "강릉"] as const;

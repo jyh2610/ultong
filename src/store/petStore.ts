@@ -28,5 +28,9 @@ export const usePetStore = create<PetState>((set) => ({
     set((state) => ({
       pets: state.pets.map((p) => (p.id === id ? { ...p, ...patch } : p)),
     })),
-  removePet: (id) => set((state) => ({ pets: state.pets.filter((p) => p.id !== id) })),
+  removePet: (id) =>
+    set((state) => {
+      if (state.pets.length <= 1) return state;
+      return { pets: state.pets.filter((p) => p.id !== id) };
+    }),
 }));

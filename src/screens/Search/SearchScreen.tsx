@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackIcon } from "../../components/icons/BackIcon";
 import { FacilityListCard } from "../../components/FacilityListCard";
@@ -7,16 +8,22 @@ import { FacilityListCardSkeleton } from "../../components/FacilityListCardSkele
 import { Skeleton } from "../../components/Skeleton";
 import { computeMatch } from "../../lib/matching";
 import { usePetStore } from "../../store/petStore";
+import type { FacilityCategory } from "../../types/facility";
 import { useFacilities } from "./api/useFacilities";
 import { SEARCH_CATEGORIES } from "./constants";
 import type { SearchScreenProps } from "./types";
 
 const SKELETON_KEYS = ["skeleton-0", "skeleton-1", "skeleton-2", "skeleton-3"];
 
+const WALK_FRIENDLY_CATEGORIES: FacilityCategory[] = ["관광지", "레포츠"];
+
 export function SearchScreen({ navigation, route }: SearchScreenProps) {
-  const [category, setCategory] = useState(route.params?.category ?? "all");
+  const [category, setCategory] = useState<(typeof SEARCH_CATEGORIES)[number]["key"]>(
+    (route.params?.category as (typeof SEARCH_CATEGORIES)[number]["key"] | undefined) ?? "all",
+  );
   const pet = usePetStore((state) => state.pets[0]);
   const { data: facilities, isPending } = useFacilities();
+  const insets = useSafeAreaInsets();
 
   const withMatch =
     pet && facilities ? facilities.map((f) => ({ facility: f, match: computeMatch(pet, f) })) : [];
@@ -24,7 +31,7 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
   const filtered = withMatch.filter(({ facility }) => {
     if (category === "all") return true;
     if (category === "walk") {
-      return facility.outdoorAllowed && ["관광지", "레포츠"].includes(facility.category);
+      return facility.outdoorAllowed && WALK_FRIENDLY_CATEGORIES.includes(facility.category);
     }
     return facility.category === category;
   });
@@ -34,7 +41,7 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
   const checkCount = withMatch.filter((f) => f.match.status === "확인필요").length;
 
   return (
-    <View className="flex-1 bg-screen px-5 pt-3.5">
+    <View className="flex-1 bg-screen px-5" style={{ paddingTop: insets.top + 14 }}>
       <View className="mb-4 flex-row items-center gap-2.5">
         <Pressable
           onPress={() => navigation.goBack()}

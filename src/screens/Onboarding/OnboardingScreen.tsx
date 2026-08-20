@@ -1,7 +1,9 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { PetProfileCard } from "../../components/PetProfileCard";
 import { usePetStore } from "../../store/petStore";
+import { useToastStore } from "../../store/toastStore";
 import type { OnboardingScreenProps } from "./types";
 
 export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
@@ -9,9 +11,11 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
   const addPet = usePetStore((state) => state.addPet);
   const updatePet = usePetStore((state) => state.updatePet);
   const removePet = usePetStore((state) => state.removePet);
+  const showToast = useToastStore((state) => state.show);
+  const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex-1 bg-screen">
+    <View className="flex-1 bg-screen" style={{ paddingTop: insets.top }}>
       <ScrollView contentContainerClassName="px-5 pb-24 pt-4">
         <View className="mb-5.5">
           <Text className="mb-2 text-xs font-bold tracking-wide text-primary">멍냥로드</Text>
@@ -27,7 +31,13 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
             key={pet.id}
             pet={pet}
             onChange={(patch) => updatePet(pet.id, patch)}
-            onRemove={() => removePet(pet.id)}
+            onRemove={() => {
+              if (pets.length <= 1) {
+                showToast("최소 1마리는 등록되어 있어야 해요");
+                return;
+              }
+              removePet(pet.id);
+            }}
           />
         ))}
         <Pressable
@@ -39,7 +49,10 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
           </Text>
         </Pressable>
       </ScrollView>
-      <View className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-3.5">
+      <View
+        className="absolute bottom-0 left-0 right-0 px-5 pt-3.5"
+        style={{ paddingBottom: insets.bottom + 32 }}
+      >
         <Pressable
           onPress={() => navigation.replace("MainTabs")}
           className="w-full rounded-2xl bg-primary p-4"

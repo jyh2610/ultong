@@ -1,7 +1,9 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { PetProfileCard } from "../../components/PetProfileCard";
 import { usePetStore } from "../../store/petStore";
+import { useToastStore } from "../../store/toastStore";
 import type { MyPageScreenProps } from "./types";
 
 const ACCOUNT_ITEMS = ["알림 설정", "데이터 출처 안내", "로그아웃"];
@@ -11,9 +13,15 @@ export function MyPageScreen(_props: MyPageScreenProps) {
   const addPet = usePetStore((state) => state.addPet);
   const updatePet = usePetStore((state) => state.updatePet);
   const removePet = usePetStore((state) => state.removePet);
+  const showToast = useToastStore((state) => state.show);
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView className="flex-1 bg-screen" contentContainerClassName="px-5 pb-8 pt-4">
+    <ScrollView
+      className="flex-1 bg-screen"
+      contentContainerClassName="px-5 pb-8 pt-4"
+      style={{ paddingTop: insets.top }}
+    >
       <Text className="mb-5 text-lg font-bold text-ink">마이페이지</Text>
       <Text className="mb-2.5 text-xs font-bold text-ink-soft">반려동물 프로필</Text>
       {pets.map((pet) => (
@@ -21,7 +29,13 @@ export function MyPageScreen(_props: MyPageScreenProps) {
           key={pet.id}
           pet={pet}
           onChange={(patch) => updatePet(pet.id, patch)}
-          onRemove={() => removePet(pet.id)}
+          onRemove={() => {
+            if (pets.length <= 1) {
+              showToast("최소 1마리는 등록되어 있어야 해요");
+              return;
+            }
+            removePet(pet.id);
+          }}
         />
       ))}
       <Pressable

@@ -1,4 +1,5 @@
 import { FlatList, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ChecklistItem } from "../../components/ChecklistItem";
 import { EmptyState } from "../../components/EmptyState";
@@ -22,12 +23,13 @@ export function OfflineScreen(_props: OfflineScreenProps) {
   const offlineSaved = useOfflineStore((state) => state.offlineSaved);
   const setOfflineSaved = useOfflineStore((state) => state.setOfflineSaved);
   const { data: facilities, isPending } = useOfflineFacilities();
+  const insets = useSafeAreaInsets();
 
   const saved = facilities ? facilities.filter((f) => savedIds.includes(f.id)) : [];
   const mergedChecklist = mergeChecklists(saved);
 
   return (
-    <View className="flex-1 bg-screen px-5 pt-4">
+    <View className="flex-1 bg-screen px-5" style={{ paddingTop: insets.top + 16 }}>
       <Text className="mb-1.5 text-lg font-bold text-ink">오프라인 보관함</Text>
       <Text className="mb-4.5 text-[12.5px] leading-5 text-ink-soft">
         여행 현장에서 네트워크 없이도 코스와 준비물을 확인할 수 있어요
