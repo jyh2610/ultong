@@ -11,19 +11,19 @@ import { computeMatch, mergeChecklists } from "../../lib/matching";
 import { useCourseStore } from "../../store/courseStore";
 import { useOfflineStore } from "../../store/offlineStore";
 import { usePetStore } from "../../store/petStore";
-import { useOfflineFacilities } from "./api/useOfflineFacilities";
+import { useFacilities } from "../../hooks/useFacilities";
 import type { OfflineScreenProps } from "./types";
 
 const SKELETON_KEYS = ["skeleton-0", "skeleton-1"];
 
-export function OfflineScreen(_props: OfflineScreenProps) {
+export function OfflineScreen({ navigation }: OfflineScreenProps) {
   const pet = usePetStore((state) => state.pets[0]);
   const savedIds = useCourseStore((state) => state.savedIds);
   const checkedPrep = useCourseStore((state) => state.checkedPrep);
   const togglePrep = useCourseStore((state) => state.togglePrep);
   const offlineSaved = useOfflineStore((state) => state.offlineSaved);
   const setOfflineSaved = useOfflineStore((state) => state.setOfflineSaved);
-  const { data: facilities, isPending } = useOfflineFacilities();
+  const { data: facilities, isPending } = useFacilities();
   const insets = useSafeAreaInsets();
 
   const saved = facilities ? facilities.filter((f) => savedIds.includes(f.id)) : [];
@@ -60,7 +60,12 @@ export function OfflineScreen(_props: OfflineScreenProps) {
           data={saved}
           keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => (
-            <SavedFacilityRow facility={item} match={computeMatch(pet, item)} order={index + 1} />
+            <SavedFacilityRow
+              facility={item}
+              match={computeMatch(pet, item)}
+              order={index + 1}
+              onPress={() => navigation.getParent()?.navigate("Detail", { facilityId: item.id })}
+            />
           )}
           ListFooterComponent={
             <>

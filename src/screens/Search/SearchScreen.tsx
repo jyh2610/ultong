@@ -4,13 +4,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackIcon } from "../../components/icons/BackIcon";
 import { Text } from "../../components/AppText";
+import { EmptyState } from "../../components/EmptyState";
 import { FacilityListCard } from "../../components/FacilityListCard";
 import { FacilityListCardSkeleton } from "../../components/FacilityListCardSkeleton";
 import { Skeleton } from "../../components/Skeleton";
 import { computeMatch } from "../../lib/matching";
 import { usePetStore } from "../../store/petStore";
 import type { FacilityCategory } from "../../types/facility";
-import { useFacilities } from "./api/useFacilities";
+import { useFacilities } from "../../hooks/useFacilities";
 import { SEARCH_CATEGORIES } from "./constants";
 import type { SearchScreenProps } from "./types";
 
@@ -46,18 +47,20 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
       <View className="mb-4 flex-row items-center gap-2.5">
         <Pressable
           onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="뒤로 가기"
           className="h-[34px] w-[34px] items-center justify-center rounded-full border border-card-border-alt bg-card"
         >
           <BackIcon color="#1C1C1E" />
         </Pressable>
-        <Text className="flex-1 text-lg font-bold text-ink">
-          검색결과{" "}
+        <View className="flex-1 flex-row items-baseline gap-1">
+          <Text className="text-lg font-bold text-ink">검색결과</Text>
           {isPending ? (
             <Skeleton width={40} height={14} radius={4} />
           ) : (
             <Text className="text-[13.5px] font-normal text-ink-soft">· {filtered.length}곳</Text>
           )}
-        </Text>
+        </View>
       </View>
       <FlatList
         horizontal
@@ -102,6 +105,11 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
           keyExtractor={(key) => key}
           contentContainerClassName="pb-8"
           renderItem={() => <FacilityListCardSkeleton />}
+        />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title="조건에 맞는 시설이 없어요"
+          description="다른 카테고리를 선택해보세요"
         />
       ) : (
         <FlatList

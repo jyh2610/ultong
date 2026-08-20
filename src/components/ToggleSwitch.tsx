@@ -9,6 +9,9 @@ export function ToggleSwitch({ value, onToggle }: ToggleSwitchProps) {
   return (
     <Pressable
       onPress={onToggle}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: value }}
+      accessibilityLabel="전환 스위치"
       className={`h-[26px] w-[46px] justify-center rounded-full ${value ? "bg-primary" : "bg-[#DADAD4]"}`}
     >
       <View

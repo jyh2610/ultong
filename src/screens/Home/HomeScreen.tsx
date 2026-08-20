@@ -5,10 +5,12 @@ import { Text } from "../../components/AppText";
 import { TextInput } from "../../components/AppTextInput";
 import { FacilityCarouselCard } from "../../components/FacilityCarouselCard";
 import { FacilityCarouselCardSkeleton } from "../../components/FacilityCarouselCardSkeleton";
+import { LocationPinIcon } from "../../components/icons/LocationPinIcon";
+import { SearchIcon } from "../../components/icons/SearchIcon";
 import { computeMatch } from "../../lib/matching";
 import { sizeOf } from "../../lib/petSize";
 import { usePetStore } from "../../store/petStore";
-import { useHomeFacilities } from "./api/useHomeFacilities";
+import { useFacilities } from "../../hooks/useFacilities";
 import { HOME_CATEGORIES, POPULAR_REGIONS } from "./constants";
 import type { HomeScreenProps } from "./types";
 
@@ -17,7 +19,7 @@ const SKELETON_KEYS = ["skeleton-0", "skeleton-1", "skeleton-2"];
 export function HomeScreen({ navigation }: HomeScreenProps) {
   const pets = usePetStore((state) => state.pets);
   const pet = pets[0];
-  const { data: facilities, isPending } = useHomeFacilities();
+  const { data: facilities, isPending } = useFacilities();
   const insets = useSafeAreaInsets();
 
   const recommendations =
@@ -48,6 +50,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           onPress={() => navigation.getParent()?.navigate("Search", {})}
           className="mb-2.5 w-full flex-row items-center gap-2.5 rounded-2xl border border-card-border-alt bg-card p-4"
         >
+          <SearchIcon color="#9A9A9E" />
           <TextInput
             editable={false}
             placeholder="지역, 시설명으로 검색"
@@ -59,6 +62,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           onPress={() => navigation.getParent()?.navigate("Search", {})}
           className="mb-4 w-full flex-row items-center gap-2 rounded-2xl border border-card-border-alt bg-[#EEF5F0] px-4 py-3"
         >
+          <LocationPinIcon color="#7A4A2B" />
           <Text className="text-[13.5px] font-semibold text-primary">
             내 주변 반려동반 가능 시설 보기
           </Text>

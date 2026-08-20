@@ -11,7 +11,7 @@ import { checklistFor, computeMatch } from "../../lib/matching";
 import { useCourseStore } from "../../store/courseStore";
 import { usePetStore } from "../../store/petStore";
 import { useToastStore } from "../../store/toastStore";
-import { useFacility } from "./api/useFacility";
+import { useFacility } from "../../hooks/useFacilities";
 import { DetailScreenSkeleton } from "./ui/DetailScreenSkeleton";
 import type { DetailScreenProps } from "./types";
 
@@ -27,7 +27,22 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
   const insets = useSafeAreaInsets();
 
   if (isPending || !pet) return <DetailScreenSkeleton />;
-  if (!facility) return null;
+  if (!facility) {
+    return (
+      <View className="flex-1 items-center justify-center bg-screen px-5" style={{ paddingTop: insets.top }}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="뒤로 가기"
+          className="absolute left-3.5 h-[34px] w-[34px] items-center justify-center rounded-full border border-card-border-alt bg-card"
+          style={{ top: insets.top + 14 }}
+        >
+          <BackIcon color="#1C1C1E" />
+        </Pressable>
+        <Text className="text-[15px] font-bold text-ink">시설을 찾을 수 없어요</Text>
+      </View>
+    );
+  }
 
   const match = computeMatch(pet, facility);
   const checklist = checklistFor(facility);
@@ -41,6 +56,8 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
           <View className="h-[210px] bg-[#EEE9E0]" />
           <Pressable
             onPress={() => navigation.goBack()}
+            accessibilityRole="button"
+            accessibilityLabel="뒤로 가기"
             className="absolute left-3.5 h-[34px] w-[34px] items-center justify-center rounded-full bg-white/90"
             style={{ top: insets.top + 14 }}
           >
@@ -78,7 +95,9 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
             {match.reasons.map((reason, index) => (
               <View
                 key={index}
-                className="flex-row items-center gap-2.5 border-b border-[#F4F1EA] px-3.5 py-2.5 last:border-b-0"
+                className={`flex-row items-center gap-2.5 px-3.5 py-2.5 ${
+                  index < match.reasons.length - 1 ? "border-b border-[#F4F1EA]" : ""
+                }`}
               >
                 <View
                   className={`h-5 w-5 items-center justify-center rounded-full ${

@@ -2,6 +2,8 @@ import { View } from "react-native";
 
 import { Skeleton } from "../../../components/Skeleton";
 
+const REASON_SKELETON_KEYS = ["reason-0", "reason-1", "reason-2", "reason-3"];
+
 export function DetailScreenSkeleton() {
   return (
     <View className="flex-1 bg-screen">
@@ -19,10 +21,12 @@ export function DetailScreenSkeleton() {
         </View>
         <Skeleton width={120} height={15} radius={4} />
         <View className="mb-2 mt-2.5 rounded-2xl border border-card-border bg-card">
-          {["reason-0", "reason-1", "reason-2", "reason-3"].map((key) => (
+          {REASON_SKELETON_KEYS.map((key, index) => (
             <View
               key={key}
-              className="flex-row items-center gap-2.5 border-b border-[#F4F1EA] px-3.5 py-2.5 last:border-b-0"
+              className={`flex-row items-center gap-2.5 px-3.5 py-2.5 ${
+                index < REASON_SKELETON_KEYS.length - 1 ? "border-b border-[#F4F1EA]" : ""
+              }`}
             >
               <Skeleton width={20} height={20} radius={10} />
               <Skeleton width="60%" height={13} />

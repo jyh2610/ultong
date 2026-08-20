@@ -10,7 +10,8 @@ import { Skeleton } from "../../components/Skeleton";
 import { computeMatch, mergeChecklists } from "../../lib/matching";
 import { useCourseStore } from "../../store/courseStore";
 import { usePetStore } from "../../store/petStore";
-import { useCourseFacilities } from "./api/useCourseFacilities";
+import { useToastStore } from "../../store/toastStore";
+import { useFacilities } from "../../hooks/useFacilities";
 import type { CourseScreenProps } from "./types";
 
 const SKELETON_KEYS = ["skeleton-0", "skeleton-1"];
@@ -21,7 +22,8 @@ export function CourseScreen({ navigation }: CourseScreenProps) {
   const toggleSaved = useCourseStore((state) => state.toggleSaved);
   const checkedPrep = useCourseStore((state) => state.checkedPrep);
   const togglePrep = useCourseStore((state) => state.togglePrep);
-  const { data: facilities, isPending } = useCourseFacilities();
+  const showToast = useToastStore((state) => state.show);
+  const { data: facilities, isPending } = useFacilities();
   const insets = useSafeAreaInsets();
 
   const saved = facilities ? facilities.filter((f) => savedIds.includes(f.id)) : [];
@@ -60,7 +62,10 @@ export function CourseScreen({ navigation }: CourseScreenProps) {
               onPress={() =>
                 navigation.getParent()?.navigate("Detail", { facilityId: item.id })
               }
-              onRemove={() => toggleSaved(item.id)}
+              onRemove={() => {
+                toggleSaved(item.id);
+                showToast("코스에서 제거했어요");
+              }}
             />
           )}
           ListFooterComponent={
