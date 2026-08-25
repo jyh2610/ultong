@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "mungnyangroad",
+    "slug": "mungnyangroad",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Pretendard-Regular.otf",
+            "./assets/fonts/Pretendard-SemiBold.otf",
+            "./assets/fonts/Pretendard-Bold.otf"
+          ]
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mungnyangroad"
+    },
+    "android": {
+      "package": "com.mungnyangroad",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "885b6680-80b4-48eb-920e-919fc39b8cb3"
+      }
+    }
+  }
+}

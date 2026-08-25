@@ -31,7 +31,9 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+!.env.example
 
 # Claude Code local settings
 .claude/settings.local.json
@@ -40,5 +42,11 @@ yarn-error.*
 *.tsbuildinfo
 
 # generated native folders
-/ios
-/android
+ios/
+android/
+
+# turborepo
+.turbo/
+
+# playwright mcp tool artifacts
+.playwright-mcp/
