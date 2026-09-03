@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 
 COPY package.json yarn.lock ./
 COPY apps/api/package.json apps/api/package.json
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --network-timeout 600000 --network-concurrency 1
 
 COPY apps/api apps/api
 RUN yarn workspace api build
@@ -16,7 +16,7 @@ WORKDIR /usr/src/app
 COPY package.json yarn.lock ./
 COPY apps/api/package.json apps/api/package.json
 RUN mkdir -p apps/api/node_modules \
-  && yarn install --production --frozen-lockfile
+  && yarn install --production --frozen-lockfile --network-timeout 600000 --network-concurrency 1
 
 # 3. Production Stage
 FROM node:20-alpine AS runner
