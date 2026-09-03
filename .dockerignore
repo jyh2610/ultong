@@ -1,0 +1,9 @@
+node_modules
+apps/*/node_modules
+apps/mobile
+.git
+.github
+.expo
+dist
+build
+*.log
