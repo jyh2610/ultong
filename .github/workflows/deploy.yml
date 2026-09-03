@@ -12,6 +12,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: (TEMP) Print host fingerprint seen by runner
+        run: ssh-keyscan -t ed25519 "${{ secrets.GCP_HOST }}" | ssh-keygen -lf - -E sha256
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
         with:
