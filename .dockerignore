@@ -7,3 +7,6 @@ apps/mobile
 dist
 build
 *.log
+**/.env
+**/.env.*
+!**/.env.example
