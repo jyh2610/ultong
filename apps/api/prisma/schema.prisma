@@ -5,3 +5,181 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ─────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────
+
+enum AuthProvider {
+  local
+  kakao
+  google
+  naver
+  apple
+
+  @@map("auth_provider")
+}
+
+enum PetSpecies {
+  dog
+  cat
+  other
+
+  @@map("pet_species")
+}
+
+/// 어휘 계약: 값 문자열이 pettour-place(ES)의 pet_tags 크기 어휘와 글자까지 동일해야 한다.
+enum PetSize {
+  초소형
+  소형
+  중소형
+  중형
+  중대형
+  대형
+
+  @@map("pet_size")
+}
+
+enum ReportType {
+  denied_entry
+  rule_changed
+  closed
+  incorrect_info
+  other
+
+  @@map("report_type")
+}
+
+enum ReportStatus {
+  pending
+  reviewing
+  resolved
+  rejected
+
+  @@map("report_status")
+}
+
+// ─────────────────────────────────────────────────────────
+// Models
+// ─────────────────────────────────────────────────────────
+
+model User {
+  id              BigInt       @id @default(autoincrement())
+  provider        AuthProvider @default(local)
+  providerUid     String?      @map("provider_uid") @db.VarChar(191)
+  email           String?      @db.VarChar(254)
+  passwordHash    String?      @map("password_hash") @db.VarChar(255)
+  nickname        String       @db.VarChar(30)
+  profileImageUrl String?      @map("profile_image_url")
+  status          String       @default("active") @db.VarChar(16)
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt       DateTime?    @map("deleted_at") @db.Timestamptz
+
+  pets     Pet[]
+  favorites Favorite[]
+  reports  Report[]
+  courses  Course[]
+
+  @@unique([provider, providerUid], map: "uq_users_provider")
+  @@map("users")
+}
+
+model Pet {
+  id               BigInt     @id @default(autoincrement())
+  userId           BigInt     @map("user_id")
+  name             String     @db.VarChar(50)
+  species          PetSpecies
+  breed            String?    @db.VarChar(50)
+  /// ★ 매칭 입력
+  weightKg         Decimal?   @map("weight_kg") @db.Decimal(5, 2)
+  /// ★ pet_tags 어휘 (PetSize 참고)
+  sizeClass        PetSize?   @map("size_class")
+  /// ★ 매칭 입력
+  hasCage          Boolean    @default(false) @map("has_cage")
+  isDangerousBreed Boolean    @default(false) @map("is_dangerous_breed")
+  isDefault        Boolean    @default(false) @map("is_default")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("pets")
+}
+
+model Favorite {
+  userId    BigInt   @map("user_id")
+  /// → ES pettour-place _id (FK 아님)
+  contentId String   @map("content_id") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@id([userId, contentId])
+  @@index([contentId])
+  @@map("favorites")
+}
+
+model Report {
+  id         BigInt       @id @default(autoincrement())
+  /// → ES pettour-place _id (FK 아님)
+  contentId  String       @map("content_id") @db.VarChar(20)
+  userId     BigInt       @map("user_id")
+  type       ReportType
+  detail     String?
+  status     ReportStatus @default(pending)
+  reportedOn DateTime     @map("reported_on") @db.Date
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([contentId])
+  @@index([userId])
+  @@map("reports")
+}
+
+/// PG가 소스 오브 트루스인 제보 집계. ES report.* 로 배치 동기화된다(synced_at 기록).
+model PlaceReportStats {
+  /// → ES pettour-place _id (FK 아님)
+  contentId      String    @id @map("content_id") @db.VarChar(20)
+  count          Int       @default(0)
+  lastReportedAt DateTime? @map("last_reported_at") @db.Timestamptz
+  warning        Boolean   @default(false)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  /// ES 반영 시각
+  syncedAt       DateTime? @map("synced_at") @db.Timestamptz
+
+  @@map("place_report_stats")
+}
+
+model Course {
+  id          BigInt   @id @default(autoincrement())
+  userId      BigInt   @map("user_id")
+  title       String   @db.VarChar(100)
+  startDate   DateTime @map("start_date") @db.Date
+  endDate     DateTime @map("end_date") @db.Date
+  isPublic    Boolean  @default(false) @map("is_public")
+  shareSlug   String?  @map("share_slug") @db.VarChar(32)
+
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CourseItem[]
+
+  @@unique([shareSlug], map: "uq_courses_share_slug")
+  @@index([userId])
+  @@map("courses")
+}
+
+model CourseItem {
+  id            BigInt  @id @default(autoincrement())
+  courseId      BigInt  @map("course_id")
+  dayNo         Int     @map("day_no") @db.SmallInt
+  sortOrder     Int     @map("sort_order")
+  /// → ES pettour-place _id (FK 아님)
+  contentId     String  @map("content_id") @db.VarChar(20)
+  titleSnapshot String? @map("title_snapshot") @db.VarChar(200)
+  memo          String?
+
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@index([courseId, dayNo, sortOrder])
+  @@map("course_items")
+}
