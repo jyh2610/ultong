@@ -80,6 +80,7 @@ model User {
   favorites Favorite[]
   reports  Report[]
   courses  Course[]
+  refreshTokens RefreshToken[]
 
   @@unique([provider, providerUid], map: "uq_users_provider")
   @@map("users")
@@ -182,4 +183,18 @@ model CourseItem {
 
   @@index([courseId, dayNo, sortOrder])
   @@map("course_items")
+}
+
+model RefreshToken {
+  id        BigInt    @id @default(autoincrement())
+  userId    BigInt    @map("user_id")
+  tokenHash String    @unique @map("token_hash") @db.VarChar(255)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
