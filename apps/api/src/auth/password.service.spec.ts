@@ -15,7 +15,9 @@ describe('PasswordService', () => {
 
   it('compare() returns true for the matching plaintext', async () => {
     const hash = await service.hash('correct horse battery staple');
-    await expect(service.compare('correct horse battery staple', hash)).resolves.toBe(true);
+    await expect(
+      service.compare('correct horse battery staple', hash),
+    ).resolves.toBe(true);
   });
 
   it('compare() returns false for a wrong plaintext', async () => {
