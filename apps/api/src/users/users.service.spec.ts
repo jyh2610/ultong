@@ -9,6 +9,7 @@ describe('UsersService', () => {
     user: {
       findFirst: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
   };
 
@@ -32,10 +33,26 @@ describe('UsersService', () => {
     expect(result).toEqual({ id: 1n, email: 'a@b.com' });
   });
 
-  it('findByProviderUid() looks up a user by provider + providerUid', async () => {
-    prisma.user.findFirst.mockResolvedValue({ id: 2n, provider: AuthProvider.kakao });
+  it('findByEmail() normalizes email to lowercase and trims whitespace before lookup', async () => {
+    prisma.user.findFirst.mockResolvedValue(null);
 
-    const result = await service.findByProviderUid(AuthProvider.kakao, 'kakao-123');
+    await service.findByEmail('  Foo@Bar.com  ');
+
+    expect(prisma.user.findFirst).toHaveBeenCalledWith({
+      where: { email: 'foo@bar.com', deletedAt: null },
+    });
+  });
+
+  it('findByProviderUid() looks up a user by provider + providerUid', async () => {
+    prisma.user.findFirst.mockResolvedValue({
+      id: 2n,
+      provider: AuthProvider.kakao,
+    });
+
+    const result = await service.findByProviderUid(
+      AuthProvider.kakao,
+      'kakao-123',
+    );
 
     expect(prisma.user.findFirst).toHaveBeenCalledWith({
       where: { provider: AuthProvider.kakao, providerUid: 'kakao-123' },
@@ -60,6 +77,37 @@ describe('UsersService', () => {
         nickname: '멍냥이',
       },
     });
+  });
+
+  it('createLocal() normalizes email to lowercase and trims whitespace before insert', async () => {
+    prisma.user.create.mockResolvedValue({ id: 3n });
+
+    await service.createLocal({
+      email: '  Foo@Bar.com  ',
+      passwordHash: 'hashed',
+      nickname: '멍냥이',
+    });
+
+    expect(prisma.user.create).toHaveBeenCalledWith({
+      data: {
+        provider: AuthProvider.local,
+        email: 'foo@bar.com',
+        passwordHash: 'hashed',
+        nickname: '멍냥이',
+      },
+    });
+  });
+
+  it('reactivate() clears deletedAt for the given user id', async () => {
+    prisma.user.update.mockResolvedValue({ id: 7n, deletedAt: null });
+
+    const result = await service.reactivate(7n);
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: 7n },
+      data: { deletedAt: null },
+    });
+    expect(result).toEqual({ id: 7n, deletedAt: null });
   });
 
   it('createOAuth() creates an OAuth-provider user with no email/password', async () => {

@@ -51,9 +51,14 @@ export class TokenService {
   ): Promise<{ userId: bigint; refreshToken: string }> {
     const existing = await this.prisma.refreshToken.findUnique({
       where: { tokenHash: this.hashRefreshToken(rawToken) },
+      include: { user: true },
     });
 
     if (!existing || existing.revokedAt || existing.expiresAt < new Date()) {
+      throw new UnauthorizedException('유효하지 않은 refresh token입니다.');
+    }
+
+    if (existing.user.deletedAt !== null || existing.user.status !== 'active') {
       throw new UnauthorizedException('유효하지 않은 refresh token입니다.');
     }
 

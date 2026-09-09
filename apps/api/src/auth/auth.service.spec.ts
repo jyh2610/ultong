@@ -1,5 +1,5 @@
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
-import { AuthProvider } from '@prisma/client';
+import { AuthProvider, Prisma } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { PasswordService } from './password.service';
@@ -12,6 +12,7 @@ describe('AuthService', () => {
     findByProviderUid: jest.fn(),
     createLocal: jest.fn(),
     createOAuth: jest.fn(),
+    reactivate: jest.fn(),
   };
   const passwordService = { hash: jest.fn(), compare: jest.fn() };
   const tokenService = {
@@ -64,6 +65,32 @@ describe('AuthService', () => {
         service.signup({ email: 'a@b.com', password: 'x', nickname: 'y' }),
       ).rejects.toThrow(ConflictException);
     });
+
+    it('throws ConflictException when createLocal races and hits the unique constraint (P2002)', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      passwordService.hash.mockResolvedValue('hashed-password');
+      usersService.createLocal.mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: 'test',
+        }),
+      );
+
+      await expect(
+        service.signup({ email: 'a@b.com', password: 'x', nickname: 'y' }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('re-throws unrelated errors from createLocal unchanged', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      passwordService.hash.mockResolvedValue('hashed-password');
+      const unrelatedError = new Error('something else broke');
+      usersService.createLocal.mockRejectedValue(unrelatedError);
+
+      await expect(
+        service.signup({ email: 'a@b.com', password: 'x', nickname: 'y' }),
+      ).rejects.toThrow(unrelatedError);
+    });
   });
 
   describe('login', () => {
@@ -112,12 +139,39 @@ describe('AuthService', () => {
         id: 'kakao-1',
         nickname: '멍멍이',
       });
-      usersService.findByProviderUid.mockResolvedValue({ id: 5n });
+      usersService.findByProviderUid.mockResolvedValue({
+        id: 5n,
+        deletedAt: null,
+      });
 
       const result = await service.loginWithKakao({
         accessToken: 'kakao-token',
       });
 
+      expect(usersService.createOAuth).not.toHaveBeenCalled();
+      expect(usersService.reactivate).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+      });
+    });
+
+    it('reactivates a soft-deleted kakao user instead of leaving them deleted', async () => {
+      kakaoService.getUserInfo.mockResolvedValue({
+        id: 'kakao-1',
+        nickname: '멍멍이',
+      });
+      usersService.findByProviderUid.mockResolvedValue({
+        id: 5n,
+        deletedAt: new Date(),
+      });
+      usersService.reactivate.mockResolvedValue({ id: 5n, deletedAt: null });
+
+      const result = await service.loginWithKakao({
+        accessToken: 'kakao-token',
+      });
+
+      expect(usersService.reactivate).toHaveBeenCalledWith(5n);
       expect(usersService.createOAuth).not.toHaveBeenCalled();
       expect(result).toEqual({
         accessToken: 'access-token',

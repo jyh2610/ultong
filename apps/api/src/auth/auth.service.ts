@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthProvider } from '@prisma/client';
+import { AuthProvider, Prisma, User } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { UsersService } from '../users/users.service';
 import { PasswordService } from './password.service';
@@ -35,11 +35,22 @@ export class AuthService {
     }
 
     const passwordHash = await this.passwordService.hash(dto.password);
-    const user = await this.usersService.createLocal({
-      email: dto.email,
-      passwordHash,
-      nickname: dto.nickname,
-    });
+    let user: User;
+    try {
+      user = await this.usersService.createLocal({
+        email: dto.email,
+        passwordHash,
+        nickname: dto.nickname,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException('이미 가입된 이메일입니다.');
+      }
+      throw error;
+    }
 
     return this.issueTokens(user.id);
   }
@@ -79,6 +90,8 @@ export class AuthService {
         nickname:
           kakaoUser.nickname ?? `user_${randomBytes(4).toString('hex')}`,
       });
+    } else if (user.deletedAt !== null) {
+      user = await this.usersService.reactivate(user.id);
     }
 
     return this.issueTokens(user.id);

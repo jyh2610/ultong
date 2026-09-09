@@ -7,10 +7,21 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findFirst({ where: { email, deletedAt: null } });
+    return this.prisma.user.findFirst({
+      where: { email: email.trim().toLowerCase(), deletedAt: null },
+    });
   }
 
-  findByProviderUid(provider: AuthProvider, providerUid: string): Promise<User | null> {
+  // uq_users_provider has no deleted_at predicate, so a soft-deleted user's
+  // row still occupies its (provider, providerUid) slot. Filtering deletedAt
+  // here would make findByProviderUid miss that row, and the caller would
+  // then try to createOAuth() and collide on that same unique index. Do not
+  // add a deletedAt filter — see AuthService.loginWithKakao for how the
+  // soft-deleted case is handled instead (reactivation).
+  findByProviderUid(
+    provider: AuthProvider,
+    providerUid: string,
+  ): Promise<User | null> {
     return this.prisma.user.findFirst({ where: { provider, providerUid } });
   }
 
@@ -22,10 +33,17 @@ export class UsersService {
     return this.prisma.user.create({
       data: {
         provider: AuthProvider.local,
-        email: params.email,
+        email: params.email.trim().toLowerCase(),
         passwordHash: params.passwordHash,
         nickname: params.nickname,
       },
+    });
+  }
+
+  reactivate(userId: bigint): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { deletedAt: null },
     });
   }
 

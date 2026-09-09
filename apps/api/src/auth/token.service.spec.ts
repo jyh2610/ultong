@@ -21,8 +21,9 @@ describe('TokenService', () => {
           tokenHash: string;
           revokedAt: Date | null;
           expiresAt: Date;
+          user: { deletedAt: Date | null; status: string };
         } | null>,
-        [{ where: { tokenHash: string } }]
+        [{ where: { tokenHash: string }; include: { user: true } }]
       >(),
       update: jest.fn<
         Promise<unknown>,
@@ -91,6 +92,7 @@ describe('TokenService', () => {
       tokenHash: hash,
       revokedAt: null,
       expiresAt: new Date(Date.now() + 1_000_000),
+      user: { deletedAt: null, status: 'active' },
     });
     prisma.refreshToken.update.mockResolvedValue({});
     prisma.refreshToken.create.mockResolvedValue({});
@@ -120,6 +122,7 @@ describe('TokenService', () => {
       tokenHash: 'x',
       revokedAt: new Date(),
       expiresAt: new Date(Date.now() + 1_000_000),
+      user: { deletedAt: null, status: 'active' },
     });
 
     await expect(service.rotateRefreshToken('revoked-token')).rejects.toThrow(
@@ -134,11 +137,42 @@ describe('TokenService', () => {
       tokenHash: 'x',
       revokedAt: null,
       expiresAt: new Date(Date.now() - 1_000),
+      user: { deletedAt: null, status: 'active' },
     });
 
     await expect(service.rotateRefreshToken('expired-token')).rejects.toThrow(
       UnauthorizedException,
     );
+  });
+
+  it('rotateRefreshToken() rejects a token belonging to a soft-deleted user', async () => {
+    prisma.refreshToken.findUnique.mockResolvedValue({
+      id: 1n,
+      userId: 9n,
+      tokenHash: 'x',
+      revokedAt: null,
+      expiresAt: new Date(Date.now() + 1_000_000),
+      user: { deletedAt: new Date(), status: 'active' },
+    });
+
+    await expect(
+      service.rotateRefreshToken('deleted-user-token'),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('rotateRefreshToken() rejects a token belonging to a suspended user', async () => {
+    prisma.refreshToken.findUnique.mockResolvedValue({
+      id: 1n,
+      userId: 9n,
+      tokenHash: 'x',
+      revokedAt: null,
+      expiresAt: new Date(Date.now() + 1_000_000),
+      user: { deletedAt: null, status: 'suspended' },
+    });
+
+    await expect(
+      service.rotateRefreshToken('suspended-user-token'),
+    ).rejects.toThrow(UnauthorizedException);
   });
 
   it('revokeRefreshToken() marks the matching, not-yet-revoked token as revoked', async () => {
