@@ -10,10 +10,33 @@ describe('TokenService', () => {
   let service: TokenService;
   const prisma = {
     refreshToken: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      update: jest.fn(),
-      updateMany: jest.fn(),
+      create: jest.fn<
+        Promise<unknown>,
+        [{ data: { userId: bigint; tokenHash: string; expiresAt: Date } }]
+      >(),
+      findUnique: jest.fn<
+        Promise<{
+          id: bigint;
+          userId: bigint;
+          tokenHash: string;
+          revokedAt: Date | null;
+          expiresAt: Date;
+        } | null>,
+        [{ where: { tokenHash: string } }]
+      >(),
+      update: jest.fn<
+        Promise<unknown>,
+        [{ where: { id: bigint }; data: { revokedAt: Date } }]
+      >(),
+      updateMany: jest.fn<
+        Promise<{ count: number }>,
+        [
+          {
+            where: { tokenHash: string; revokedAt: null };
+            data: { revokedAt: Date };
+          },
+        ]
+      >(),
     },
   };
   const config = {
@@ -37,7 +60,9 @@ describe('TokenService', () => {
   it('issueAccessToken() returns a JWT with sub = userId as a string', () => {
     const token = service.issueAccessToken(42n);
     const [, payloadB64] = token.split('.');
-    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString()) as {
+    const payload = JSON.parse(
+      Buffer.from(payloadB64, 'base64url').toString(),
+    ) as {
       sub: string;
     };
     expect(payload.sub).toBe('42');
@@ -49,11 +74,11 @@ describe('TokenService', () => {
     const raw = await service.issueRefreshToken(7n);
 
     expect(prisma.refreshToken.create).toHaveBeenCalledTimes(1);
-    const createArgs = prisma.refreshToken.create.mock.calls[0][0] as {
-      data: { userId: bigint; tokenHash: string; expiresAt: Date };
-    };
+    const createArgs = prisma.refreshToken.create.mock.calls[0][0];
     expect(createArgs.data.userId).toBe(7n);
-    expect(createArgs.data.tokenHash).toBe(createHash('sha256').update(raw).digest('hex'));
+    expect(createArgs.data.tokenHash).toBe(
+      createHash('sha256').update(raw).digest('hex'),
+    );
     expect(createArgs.data.tokenHash).not.toBe(raw);
   });
 
@@ -83,7 +108,9 @@ describe('TokenService', () => {
   it('rotateRefreshToken() rejects an unknown token', async () => {
     prisma.refreshToken.findUnique.mockResolvedValue(null);
 
-    await expect(service.rotateRefreshToken('unknown')).rejects.toThrow(UnauthorizedException);
+    await expect(service.rotateRefreshToken('unknown')).rejects.toThrow(
+      UnauthorizedException,
+    );
   });
 
   it('rotateRefreshToken() rejects an already-revoked token', async () => {
@@ -121,7 +148,9 @@ describe('TokenService', () => {
 
     expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
       where: {
-        tokenHash: createHash('sha256').update('a-raw-refresh-token').digest('hex'),
+        tokenHash: createHash('sha256')
+          .update('a-raw-refresh-token')
+          .digest('hex'),
         revokedAt: null,
       },
       data: { revokedAt: expect.any(Date) as Date },

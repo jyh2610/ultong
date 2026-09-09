@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -24,7 +24,8 @@ export class TokenService {
       { sub: userId.toString() },
       {
         secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
-        expiresIn: this.config.get<string>('JWT_ACCESS_EXPIRES_IN') ?? '1h',
+        expiresIn: (this.config.get<string>('JWT_ACCESS_EXPIRES_IN') ??
+          '1h') as JwtSignOptions['expiresIn'],
       },
     );
   }
@@ -32,7 +33,10 @@ export class TokenService {
   async issueRefreshToken(userId: bigint): Promise<string> {
     const raw = randomBytes(32).toString('hex');
     const expiresAt = new Date(
-      Date.now() + this.parseDurationMs(this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '30d'),
+      Date.now() +
+        this.parseDurationMs(
+          this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '30d',
+        ),
     );
 
     await this.prisma.refreshToken.create({
@@ -42,7 +46,9 @@ export class TokenService {
     return raw;
   }
 
-  async rotateRefreshToken(rawToken: string): Promise<{ userId: bigint; refreshToken: string }> {
+  async rotateRefreshToken(
+    rawToken: string,
+  ): Promise<{ userId: bigint; refreshToken: string }> {
     const existing = await this.prisma.refreshToken.findUnique({
       where: { tokenHash: this.hashRefreshToken(rawToken) },
     });
