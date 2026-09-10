@@ -1,0 +1,1877 @@
+{
+  "generated_at": "2026-09-08T11:32:40.323677+09:00",
+  "tagger_version": "1.2.0",
+  "source_of_truth": "pettour/tagging.py :: match()",
+  "note": "NestJS 의 matchVerdict() 는 이 파일의 모든 케이스를 통과해야 한다. 입력은 pet_tags(= ES _source.pet_tags) + persona, 출력은 expected 와 verdict/area_restricted/confidence 가 일치해야 한다. reasons 는 사람이 읽는 문구라 문자열 일치까지 요구하지 않는다(개수만 참고).",
+  "personas": [
+    {
+      "id": "maltese_4kg_cage",
+      "label": "말티즈 4kg · 케이지 있음",
+      "weight_kg": 4,
+      "size": "small",
+      "has_cage": true
+    },
+    {
+      "id": "cocker_13kg_nocage",
+      "label": "코카스파니엘 13kg · 케이지 없음",
+      "weight_kg": 13,
+      "size": "medium",
+      "has_cage": false
+    },
+    {
+      "id": "retriever_32kg_nocage",
+      "label": "리트리버 32kg · 케이지 없음",
+      "weight_kg": 32,
+      "size": "large",
+      "has_cage": false
+    },
+    {
+      "id": "unknown_pet",
+      "label": "반려동물 정보 미입력",
+      "weight_kg": null,
+      "size": null,
+      "has_cage": false
+    }
+  ],
+  "cases": [
+    {
+      "bucket": "동반 불가",
+      "content_id": "130833",
+      "title": "춘천시립도서관(장난감도서관)",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "pet_denied"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.270567+09:00",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "tagger_version": "1.2.0",
+        "pet_allowed": false
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "동반 불가",
+      "content_id": "1972030",
+      "title": "상유재",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "pet_denied",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.272552+09:00",
+        "area_scope": "all",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "outdoor_allowed": true,
+        "tagger_version": "1.2.0",
+        "indoor_allowed": true,
+        "pet_allowed": false
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "동반 불가",
+      "content_id": "1990092",
+      "title": "고성 최필간고택",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "pet_denied",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.276147+09:00",
+        "area_scope": "all",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "outdoor_allowed": true,
+        "tagger_version": "1.2.0",
+        "indoor_allowed": true,
+        "pet_allowed": false
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "동반 불가",
+      "content_id": "2528107",
+      "title": "샤니모텔",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "pet_denied"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.275831+09:00",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "tagger_version": "1.2.0",
+        "pet_allowed": false
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "원문에 반려동물 동반 불가로 명시됨 (안내견·보조견 전용 포함)"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "체중 상한 명시",
+      "content_id": "125419",
+      "title": "국립 천관산자연휴양림",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "weight_limit_kg": 15.0,
+        "matched_rules": [
+          "equip:leash_required",
+          "weight_explicit"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.908023+09:00",
+        "size_max": "중소형",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "tagger_version": "1.2.0",
+        "leash_required": true,
+        "weight_op": "lte"
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 4kg ≤ 15.0kg 충족"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 13kg ≤ 15.0kg 충족"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 32kg > 명시 기준 15.0kg lte"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": []
+        }
+      }
+    },
+    {
+      "bucket": "체중 상한 명시",
+      "content_id": "126317",
+      "title": "순천 고인돌 공원",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "all",
+        "size_max": "소형",
+        "confidence": "certain",
+        "tagger_version": "1.2.0",
+        "weight_op": "lte",
+        "weight_limit_kg": 10.0,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "weight_explicit",
+          "poop_bag",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.903169+09:00",
+        "poop_bag_required": true,
+        "confidence_score": 1.0,
+        "outdoor_allowed": true,
+        "leash_required": true,
+        "indoor_allowed": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 4kg ≤ 10.0kg 충족"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 13kg > 명시 기준 10.0kg lte"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 32kg > 명시 기준 10.0kg lte"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": []
+        }
+      }
+    },
+    {
+      "bucket": "체중 상한 명시",
+      "content_id": "126450",
+      "title": "마라도",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "partial",
+        "size_max": "소형",
+        "confidence": "certain",
+        "tagger_version": "1.2.0",
+        "cage_required": true,
+        "weight_op": "lte",
+        "stroller_allowed": true,
+        "weight_limit_kg": 5.0,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "equip:stroller_allowed",
+          "equip:cage_required",
+          "weight_explicit",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.263689+09:00",
+        "poop_bag_required": true,
+        "confidence_score": 1.0,
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "체중 4kg ≤ 5.0kg 충족",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 13kg > 명시 기준 5.0kg lte"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 32kg > 명시 기준 5.0kg lte"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "체중 상한 명시",
+      "content_id": "126455",
+      "title": "한림공원",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "all",
+        "size_max": "소형",
+        "confidence": "certain",
+        "tagger_version": "1.2.0",
+        "cage_required": true,
+        "weight_op": "lte",
+        "weight_limit_kg": 7.0,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "weight_explicit",
+          "cage_from_text",
+          "poop_bag",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.932276+09:00",
+        "poop_bag_required": true,
+        "confidence_score": 1.0,
+        "outdoor_allowed": true,
+        "leash_required": true,
+        "indoor_allowed": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 4kg ≤ 7.0kg 충족"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 13kg > 명시 기준 7.0kg lte"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 32kg > 명시 기준 7.0kg lte"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "체중 상한 명시",
+      "content_id": "126719",
+      "title": "서울랜드",
+      "pet_tags": {
+        "weight_is_estimated": true,
+        "area_scope": "partial",
+        "size_max": "소형",
+        "confidence": "estimated",
+        "tagger_version": "1.2.0",
+        "cage_required": true,
+        "weight_op": "lte",
+        "stroller_allowed": true,
+        "weight_limit_kg": 10.0,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "equip:stroller_allowed",
+          "equip:cage_required",
+          "size_word",
+          "weight_from_size",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.928275+09:00",
+        "poop_bag_required": true,
+        "confidence_score": 0.6,
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "체중 4kg ≤ 10.0kg 충족",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "estimated",
+          "reasons": [
+            "체중 13kg > 추정 기준 10.0kg lte"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "estimated",
+          "reasons": [
+            "체중 32kg > 추정 기준 10.0kg lte"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "체중 상한 명시",
+      "content_id": "126745",
+      "title": "국립검마산자연휴양림",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "partial",
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "tagger_version": "1.2.0",
+        "vaccination_required": true,
+        "weight_op": "lte",
+        "weight_limit_kg": 15.0,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "equip:manner_belt_required",
+          "weight_explicit",
+          "size_unlimited",
+          "breed_excluded",
+          "vaccination",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.913375+09:00",
+        "poop_bag_required": true,
+        "breed_excluded": [
+          "맹견"
+        ],
+        "confidence_score": 1.0,
+        "leash_required": true,
+        "manner_belt_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "체중 4kg ≤ 15.0kg 충족",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "체중 13kg ≤ 15.0kg 충족",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 32kg > 명시 기준 15.0kg lte"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "제한없음",
+      "content_id": "1019041",
+      "title": "와룡공원",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "all",
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "muzzle_required_for_dangerous": true,
+        "tagger_version": "1.2.0",
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.273873+09:00",
+        "poop_bag_required": true,
+        "confidence_score": 1.0,
+        "outdoor_allowed": true,
+        "leash_required": true,
+        "indoor_allowed": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "제한없음",
+      "content_id": "1021339",
+      "title": "서래마을",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "all",
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "muzzle_required_for_dangerous": true,
+        "tagger_version": "1.2.0",
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.929296+09:00",
+        "poop_bag_required": true,
+        "confidence_score": 1.0,
+        "outdoor_allowed": true,
+        "leash_required": true,
+        "indoor_allowed": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "제한없음",
+      "content_id": "1032715",
+      "title": "굴업도",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.926687+09:00",
+        "area_scope": "partial",
+        "poop_bag_required": true,
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "muzzle_required_for_dangerous": true,
+        "tagger_version": "1.2.0",
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "제한없음",
+      "content_id": "1037031",
+      "title": "[북악하늘길 스카이웨이] 하늘한마당~하늘마루",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "all",
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "muzzle_required_for_dangerous": true,
+        "tagger_version": "1.2.0",
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.274284+09:00",
+        "poop_bag_required": true,
+        "confidence_score": 1.0,
+        "outdoor_allowed": true,
+        "leash_required": true,
+        "indoor_allowed": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "케이지 필수",
+      "content_id": "1039170",
+      "title": "옥토끼우주센터",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "stroller_allowed": true,
+        "matched_rules": [
+          "area_scope",
+          "equip:stroller_allowed",
+          "equip:cage_required",
+          "size_unlimited",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.281359+09:00",
+        "area_scope": "all",
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "outdoor_allowed": true,
+        "tagger_version": "1.2.0",
+        "cage_required": true,
+        "indoor_allowed": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "케이지 필수",
+      "content_id": "125534",
+      "title": "강화 전등사",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "partial",
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "muzzle_required_for_dangerous": true,
+        "tagger_version": "1.2.0",
+        "cage_required": true,
+        "stroller_allowed": true,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "equip:stroller_allowed",
+          "equip:cage_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.278776+09:00",
+        "poop_bag_required": true,
+        "confidence_score": 1.0,
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "케이지 필수",
+      "content_id": "126547",
+      "title": "고창 고인돌 유적 [유네스코 세계유산]",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "equip:cage_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.931240+09:00",
+        "area_scope": "partial",
+        "poop_bag_required": true,
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "muzzle_required_for_dangerous": true,
+        "tagger_version": "1.2.0",
+        "leash_required": true,
+        "cage_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "케이지 필수",
+      "content_id": "126644",
+      "title": "간현관광지",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "partial",
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "muzzle_required_for_dangerous": true,
+        "tagger_version": "1.2.0",
+        "cage_required": true,
+        "stroller_allowed": true,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "equip:stroller_allowed",
+          "equip:cage_required",
+          "equip:manner_belt_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.903723+09:00",
+        "poop_bag_required": true,
+        "confidence_score": 1.0,
+        "leash_required": true,
+        "manner_belt_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "이동장(켄넬) 필수 — 미소지 시 입장 불가",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "일부구역",
+      "content_id": "1100498",
+      "title": "북촌 8경",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag",
+          "indoor_ask"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.279538+09:00",
+        "area_scope": "partial",
+        "poop_bag_required": true,
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "muzzle_required_for_dangerous": true,
+        "outdoor_allowed": true,
+        "tagger_version": "1.2.0",
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "일부구역",
+      "content_id": "1115613",
+      "title": "수성못 유원지",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.928402+09:00",
+        "area_scope": "partial",
+        "poop_bag_required": true,
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "muzzle_required_for_dangerous": true,
+        "tagger_version": "1.2.0",
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "일부구역",
+      "content_id": "1119452",
+      "title": "동락공원",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "equip:muzzle_required",
+          "equip:leash_required",
+          "size_unlimited"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.271202+09:00",
+        "area_scope": "partial",
+        "muzzle_required": true,
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "tagger_version": "1.2.0",
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "일부구역",
+      "content_id": "1125480",
+      "title": "상소동 산림욕장",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "size_unlimited",
+          "muzzle_for_dangerous",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.931692+09:00",
+        "area_scope": "partial",
+        "poop_bag_required": true,
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "confidence_score": 1.0,
+        "muzzle_required_for_dangerous": true,
+        "tagger_version": "1.2.0",
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "신뢰도 추정",
+      "content_id": "1115042",
+      "title": "봉화산(서울)",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "muzzle_for_dangerous",
+          "poop_bag",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.929079+09:00",
+        "area_scope": "all",
+        "poop_bag_required": true,
+        "confidence": "estimated",
+        "confidence_score": 0.6,
+        "muzzle_required_for_dangerous": true,
+        "outdoor_allowed": true,
+        "tagger_version": "1.2.0",
+        "leash_required": true,
+        "indoor_allowed": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "estimated",
+          "reasons": []
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "estimated",
+          "reasons": []
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "estimated",
+          "reasons": []
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": false,
+          "confidence": "estimated",
+          "reasons": []
+        }
+      }
+    },
+    {
+      "bucket": "신뢰도 추정",
+      "content_id": "1199931",
+      "title": "조종천계곡",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "leash_from_text",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.929427+09:00",
+        "area_scope": "partial",
+        "poop_bag_required": true,
+        "confidence": "estimated",
+        "confidence_score": 0.6,
+        "tagger_version": "1.2.0",
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "신뢰도 추정",
+      "content_id": "125701",
+      "title": "하조대해수욕장",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.265399+09:00",
+        "area_scope": "partial",
+        "poop_bag_required": true,
+        "confidence": "estimated",
+        "confidence_score": 0.6,
+        "tagger_version": "1.2.0",
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "신뢰도 추정",
+      "content_id": "125817",
+      "title": "계룡산국립공원",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "vaccination"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.542271+09:00",
+        "area_scope": "partial",
+        "confidence": "estimated",
+        "confidence_score": 0.6,
+        "tagger_version": "1.2.0",
+        "vaccination_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "신뢰도 불명",
+      "content_id": "3102095",
+      "title": "보라보라",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "tagged_at": "2026-09-08T11:31:22.276658+09:00",
+        "confidence": "unknown",
+        "confidence_score": 0.2,
+        "tagger_version": "1.2.0"
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "unknown",
+          "area_restricted": false,
+          "confidence": "unknown",
+          "reasons": [
+            "원문에 동반 조건 문구 없음 — 방문 전 확인 필요"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "unknown",
+          "area_restricted": false,
+          "confidence": "unknown",
+          "reasons": [
+            "원문에 동반 조건 문구 없음 — 방문 전 확인 필요"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "unknown",
+          "area_restricted": false,
+          "confidence": "unknown",
+          "reasons": [
+            "원문에 동반 조건 문구 없음 — 방문 전 확인 필요"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "unknown",
+          "area_restricted": false,
+          "confidence": "unknown",
+          "reasons": [
+            "원문에 동반 조건 문구 없음 — 방문 전 확인 필요"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "신뢰도 불명",
+      "content_id": "3456352",
+      "title": "르씨엘",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "tagged_at": "2026-09-08T11:31:22.270482+09:00",
+        "confidence": "unknown",
+        "confidence_score": 0.2,
+        "tagger_version": "1.2.0"
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "unknown",
+          "area_restricted": false,
+          "confidence": "unknown",
+          "reasons": [
+            "원문에 동반 조건 문구 없음 — 방문 전 확인 필요"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "unknown",
+          "area_restricted": false,
+          "confidence": "unknown",
+          "reasons": [
+            "원문에 동반 조건 문구 없음 — 방문 전 확인 필요"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "unknown",
+          "area_restricted": false,
+          "confidence": "unknown",
+          "reasons": [
+            "원문에 동반 조건 문구 없음 — 방문 전 확인 필요"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "unknown",
+          "area_restricted": false,
+          "confidence": "unknown",
+          "reasons": [
+            "원문에 동반 조건 문구 없음 — 방문 전 확인 필요"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "맹견 제외",
+      "content_id": "126010",
+      "title": "서천 마량리 동백나무 숲",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "all",
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "tagger_version": "1.2.0",
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "size_unlimited",
+          "breed_excluded",
+          "poop_bag",
+          "indoor_from_all_area"
+        ],
+        "tagged_at": "2026-09-08T11:31:22.281406+09:00",
+        "poop_bag_required": true,
+        "breed_excluded": [
+          "맹견"
+        ],
+        "confidence_score": 1.0,
+        "outdoor_allowed": true,
+        "leash_required": true,
+        "indoor_allowed": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "맹견 제외",
+      "content_id": "127171",
+      "title": "국립 산음자연휴양림",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "area_scope": "partial",
+        "size_max": "제한없음",
+        "confidence": "certain",
+        "tagger_version": "1.2.0",
+        "vaccination_required": true,
+        "weight_op": "lte",
+        "weight_limit_kg": 15.0,
+        "matched_rules": [
+          "area_scope",
+          "equip:muzzle_required",
+          "equip:leash_required",
+          "weight_explicit",
+          "size_unlimited",
+          "breed_excluded",
+          "vaccination",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.927263+09:00",
+        "muzzle_required": true,
+        "poop_bag_required": true,
+        "breed_excluded": [
+          "맹견"
+        ],
+        "confidence_score": 1.0,
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "체중 4kg ≤ 15.0kg 충족",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "체중 13kg ≤ 15.0kg 충족",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "denied",
+          "area_restricted": false,
+          "confidence": "certain",
+          "reasons": [
+            "체중 32kg > 명시 기준 15.0kg lte"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "allowed",
+          "area_restricted": true,
+          "confidence": "certain",
+          "reasons": [
+            "견종·체중 제한 없음",
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    },
+    {
+      "bucket": "맹견 제외",
+      "content_id": "127487",
+      "title": "경주엑스포대공원",
+      "pet_tags": {
+        "weight_is_estimated": false,
+        "matched_rules": [
+          "area_scope",
+          "equip:leash_required",
+          "breed_excluded",
+          "poop_bag"
+        ],
+        "tagged_at": "2026-09-08T11:31:21.932089+09:00",
+        "area_scope": "partial",
+        "poop_bag_required": true,
+        "breed_excluded": [
+          "맹견"
+        ],
+        "confidence": "estimated",
+        "confidence_score": 0.6,
+        "tagger_version": "1.2.0",
+        "leash_required": true
+      },
+      "expected": {
+        "maltese_4kg_cage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "cocker_13kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "retriever_32kg_nocage": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        },
+        "unknown_pet": {
+          "verdict": "conditional",
+          "area_restricted": true,
+          "confidence": "estimated",
+          "reasons": [
+            "일부 구역만 동반 가능 — 상세 구역은 원문 확인"
+          ]
+        }
+      }
+    }
+  ]
+}
