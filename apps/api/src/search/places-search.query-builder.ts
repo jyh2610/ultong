@@ -21,18 +21,20 @@ export function buildPlacesSearchQuery(
   if (dto.lcls2) filter.push({ term: { 'category.lcls2': dto.lcls2 } });
   if (dto.lcls3) filter.push({ term: { 'category.lcls3': dto.lcls3 } });
 
-  if (
-    dto.lat !== undefined &&
-    dto.lon !== undefined &&
-    dto.radiusKm !== undefined
-  ) {
-    filter.push({
-      geo_distance: {
-        distance: `${dto.radiusKm}km`,
-        location: { lat: dto.lat, lon: dto.lon },
-      },
-    });
-  }
+  // [비활성화 2026-09-14] 위치정보사업자 신고 회피 — 클라이언트 이관
+  // (docs/superpowers/specs/2026-09-14-location-client-side-design.md)
+  // if (
+  //   dto.lat !== undefined &&
+  //   dto.lon !== undefined &&
+  //   dto.radiusKm !== undefined
+  // ) {
+  //   filter.push({
+  //     geo_distance: {
+  //       distance: `${dto.radiusKm}km`,
+  //       location: { lat: dto.lat, lon: dto.lon },
+  //     },
+  //   });
+  // }
 
   if (dto.weightKg !== undefined) {
     filter.push({
@@ -143,21 +145,24 @@ export function buildPlacesSearchQuery(
     },
   };
 
-  if (
-    dto.sort === 'distance' &&
-    dto.lat !== undefined &&
-    dto.lon !== undefined
-  ) {
-    request.sort = [
-      {
-        _geo_distance: {
-          location: { lat: dto.lat, lon: dto.lon },
-          order: 'asc',
-          unit: 'km',
-        },
-      },
-    ];
-  } else if (dto.sort === 'recent') {
+  // [비활성화 2026-09-14] 위치정보사업자 신고 회피 — 클라이언트 이관
+  // (docs/superpowers/specs/2026-09-14-location-client-side-design.md)
+  // if (
+  //   dto.sort === 'distance' &&
+  //   dto.lat !== undefined &&
+  //   dto.lon !== undefined
+  // ) {
+  //   request.sort = [
+  //     {
+  //       _geo_distance: {
+  //         location: { lat: dto.lat, lon: dto.lon },
+  //         order: 'asc',
+  //         unit: 'km',
+  //       },
+  //     },
+  //   ];
+  // } else
+  if (dto.sort === 'recent') {
     request.sort = [{ 'sync.modified_at': 'desc' }];
   }
 

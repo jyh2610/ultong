@@ -98,23 +98,24 @@ describe('buildPlacesSearchQuery', () => {
     });
   });
 
-  it('adds a geo_distance filter only when lat, lon, and radiusKm are all present', () => {
-    const withGeo = buildPlacesSearchQuery(
-      baseDto({ lat: 35.16, lon: 129.16, radiusKm: 5 }),
-    );
-    const boolWithGeo = getBool(withGeo);
-    expect(boolWithGeo.filter).toContainEqual({
-      geo_distance: { distance: '5km', location: { lat: 35.16, lon: 129.16 } },
-    });
-
-    const withoutGeo = buildPlacesSearchQuery(baseDto({ lat: 35.16 }));
-    const boolWithoutGeo = getBool(withoutGeo);
-    expect(
-      boolWithoutGeo.filter.some(
-        (clause: Record<string, unknown>) => 'geo_distance' in clause,
-      ),
-    ).toBe(false);
-  });
+  // [비활성화 2026-09-14] geo_distance 필터 자체가 비활성화됨 — 위 query-builder.ts 참고
+  // it('adds a geo_distance filter only when lat, lon, and radiusKm are all present', () => {
+  //   const withGeo = buildPlacesSearchQuery(
+  //     baseDto({ lat: 35.16, lon: 129.16, radiusKm: 5 }),
+  //   );
+  //   const boolWithGeo = getBool(withGeo);
+  //   expect(boolWithGeo.filter).toContainEqual({
+  //     geo_distance: { distance: '5km', location: { lat: 35.16, lon: 129.16 } },
+  //   });
+  //
+  //   const withoutGeo = buildPlacesSearchQuery(baseDto({ lat: 35.16 }));
+  //   const boolWithoutGeo = getBool(withoutGeo);
+  //   expect(
+  //     boolWithoutGeo.filter.some(
+  //       (clause: Record<string, unknown>) => 'geo_distance' in clause,
+  //     ),
+  //   ).toBe(false);
+  // });
 
   it('adds a weight candidate-narrowing filter (missing OR >= weightKg) when weightKg is given', () => {
     const request = buildPlacesSearchQuery(baseDto({ weightKg: 13 }));
@@ -210,21 +211,22 @@ describe('buildPlacesSearchQuery', () => {
     expect(request.size).toBe(10);
   });
 
-  it('sorts by _geo_distance when sort=distance and lat/lon are present', () => {
-    const request = buildPlacesSearchQuery(
-      baseDto({ sort: 'distance', lat: 35.16, lon: 129.16 }),
-    );
-
-    expect(request.sort).toEqual([
-      {
-        _geo_distance: {
-          location: { lat: 35.16, lon: 129.16 },
-          order: 'asc',
-          unit: 'km',
-        },
-      },
-    ]);
-  });
+  // [비활성화 2026-09-14] _geo_distance 정렬 자체가 비활성화됨 — 위 query-builder.ts 참고
+  // it('sorts by _geo_distance when sort=distance and lat/lon are present', () => {
+  //   const request = buildPlacesSearchQuery(
+  //     baseDto({ sort: 'distance', lat: 35.16, lon: 129.16 }),
+  //   );
+  //
+  //   expect(request.sort).toEqual([
+  //     {
+  //       _geo_distance: {
+  //         location: { lat: 35.16, lon: 129.16 },
+  //         order: 'asc',
+  //         unit: 'km',
+  //       },
+  //     },
+  //   ]);
+  // });
 
   it('sorts by sync.modified_at desc when sort=recent', () => {
     const request = buildPlacesSearchQuery(baseDto({ sort: 'recent' }));
