@@ -16,5 +16,6 @@ import { IntroRefetchService } from './intro-refetch.service';
     PlaceDetailService,
     IntroRefetchService,
   ],
+  exports: [EsClientService],
 })
 export class SearchModule {}
