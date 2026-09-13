@@ -1,0 +1,13 @@
+{
+  "mappings": {
+    "properties": {
+      "code_type": { "type": "keyword" },
+      "code": { "type": "keyword" },
+      "name": { "type": "keyword" },
+      "parent_code": { "type": "keyword" },
+      "parent_name": { "type": "keyword" },
+      "depth": { "type": "integer" },
+      "path": { "type": "keyword" }
+    }
+  }
+}

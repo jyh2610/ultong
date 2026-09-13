@@ -1,0 +1,74 @@
+{
+  "mappings": {
+    "properties": {
+      "title": { "type": "text" },
+      "overview": { "type": "text" },
+      "addr1": { "type": "text" },
+      "thumb": { "type": "keyword" },
+      "location": { "type": "geo_point" },
+      "category": {
+        "properties": {
+          "content_type_id": { "type": "keyword" },
+          "lcls1": { "type": "keyword" },
+          "lcls2": { "type": "keyword" },
+          "lcls3": { "type": "keyword" }
+        }
+      },
+      "region": {
+        "properties": {
+          "ldong_regn_cd": { "type": "keyword" },
+          "ldong_signgu_cd": { "type": "keyword" }
+        }
+      },
+      "sync": {
+        "properties": {
+          "is_active": { "type": "boolean" },
+          "modified_at": { "type": "date" },
+          "intro_checked_at": { "type": "date" }
+        }
+      },
+      "pet_tags": {
+        "properties": {
+          "pet_allowed": { "type": "boolean" },
+          "confidence": { "type": "keyword" },
+          "confidence_score": { "type": "float" },
+          "weight_limit_kg": { "type": "float" },
+          "weight_op": { "type": "keyword" },
+          "weight_is_estimated": { "type": "boolean" },
+          "size_max": { "type": "keyword" },
+          "area_scope": { "type": "keyword" },
+          "cage_required": { "type": "boolean" },
+          "stroller_allowed": { "type": "boolean" },
+          "leash_required": { "type": "boolean" },
+          "muzzle_required": { "type": "boolean" },
+          "muzzle_required_for_dangerous": { "type": "boolean" },
+          "manner_belt_required": { "type": "boolean" },
+          "vaccination_required": { "type": "boolean" },
+          "poop_bag_required": { "type": "boolean" },
+          "outdoor_allowed": { "type": "boolean" },
+          "indoor_allowed": { "type": "boolean" },
+          "breed_excluded": { "type": "keyword" },
+          "matched_rules": { "type": "keyword" },
+          "tagged_at": { "type": "date" },
+          "tagger_version": { "type": "keyword" }
+        }
+      },
+      "pet_raw": {
+        "properties": {
+          "possible_pet": { "type": "text" },
+          "need_matter": { "type": "text" },
+          "etc_info": { "type": "text" }
+        }
+      },
+      "pet_evidence": { "type": "object", "enabled": true },
+      "report": {
+        "properties": {
+          "warning": { "type": "boolean" },
+          "count": { "type": "integer" },
+          "last_reported_at": { "type": "date" }
+        }
+      },
+      "intro": { "type": "object", "enabled": false }
+    }
+  }
+}
