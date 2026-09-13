@@ -5,8 +5,6 @@ import {
   IsBoolean,
   IsIn,
   IsInt,
-  IsLatitude,
-  IsLongitude,
   IsNumber,
   IsOptional,
   IsPositive,
@@ -18,7 +16,7 @@ import { toBoolean } from './query-transforms';
 
 export const MVP_CONTENT_TYPE_IDS = ['12', '14', '28', '32', '39'];
 
-export type PlacesSortOption = 'relevance' | 'distance' | 'recent';
+export type PlacesSortOption = 'relevance' | 'recent';
 
 function toStringArray({ value }: { value: unknown }): unknown {
   if (Array.isArray(value)) return value;
@@ -68,24 +66,29 @@ export class PlacesSearchQueryDto {
   @IsString()
   ldongSignguCd?: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Type(() => Number)
-  @IsLatitude()
-  lat?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Type(() => Number)
-  @IsLongitude()
-  lon?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  radiusKm?: number;
+  // [비활성화 2026-09-14] 위치정보사업자 신고 회피 — 클라이언트 이관
+  // (docs/superpowers/specs/2026-09-14-location-client-side-design.md)
+  // 서버는 사용자 좌표를 더 이상 받지 않는다. 거리 계산/반경 필터는 모바일에서
+  // expo-location + src/lib/distance.ts(Haversine)로 처리한다.
+  //
+  // @ApiPropertyOptional()
+  // @IsOptional()
+  // @Type(() => Number)
+  // @IsLatitude()
+  // lat?: number;
+  //
+  // @ApiPropertyOptional()
+  // @IsOptional()
+  // @Type(() => Number)
+  // @IsLongitude()
+  // lon?: number;
+  //
+  // @ApiPropertyOptional()
+  // @IsOptional()
+  // @Type(() => Number)
+  // @IsNumber()
+  // @IsPositive()
+  // radiusKm?: number;
 
   @ApiPropertyOptional({
     description: '반려견 체중(kg) — 후보 축소용, 최종 판정은 matchVerdict',
@@ -111,11 +114,11 @@ export class PlacesSearchQueryDto {
   excludeDangerous?: boolean;
 
   @ApiPropertyOptional({
-    enum: ['relevance', 'distance', 'recent'],
+    enum: ['relevance', 'recent'],
     default: 'relevance',
   })
   @IsOptional()
-  @IsIn(['relevance', 'distance', 'recent'])
+  @IsIn(['relevance', 'recent'])
   sort: PlacesSortOption = 'relevance';
 
   @ApiPropertyOptional({ default: 1 })
