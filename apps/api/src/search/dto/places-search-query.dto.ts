@@ -14,6 +14,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { toBoolean } from './query-transforms';
 
 export const MVP_CONTENT_TYPE_IDS = ['12', '14', '28', '32', '39'];
 
@@ -22,13 +23,6 @@ export type PlacesSortOption = 'relevance' | 'distance' | 'recent';
 function toStringArray({ value }: { value: unknown }): unknown {
   if (Array.isArray(value)) return value;
   if (typeof value === 'string') return value.split(',');
-  return value;
-}
-
-function toBoolean({ value }: { value: unknown }): unknown {
-  if (typeof value === 'boolean') return value;
-  if (value === 'true') return true;
-  if (value === 'false') return false;
   return value;
 }
 
