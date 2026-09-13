@@ -50,3 +50,5 @@ android/
 
 # playwright mcp tool artifacts
 .playwright-mcp/
+
+.superpowers/
