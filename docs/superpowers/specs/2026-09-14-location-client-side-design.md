@@ -12,7 +12,7 @@
 
 이번 설계의 목적은 "서버가 사용자 좌표를 아예 받지 않는" 상태를 만드는 것이다 — 단순히 모바일이 해당 파라미터를 안 보내는 정도가 아니라, API 자체가 그 경로를 갖지 않게 한다.
 
-**규모 관련 미확정 사항:** 전체 시설 데이터 규모(ES 인덱스 문서 수)가 아직 파악되지 않았다(ES 인덱싱 담당 팀원 확인 필요). 이 설계는 "한 번에 최대 100건(API `size` 상한)을 받아 그 안에서 거리 계산"하는 방식을 전제로 한다 — 데이터가 수천 건 이상으로 확인되면 페이지네이션 방식(다중 페이지 fetch 또는 서버 측 재도입)을 다시 검토해야 한다.
+**2026-09-14 갱신 — 데이터 규모 확인 결과:** 팀원 확인 결과 전체 시설 데이터가 "너무 많다"고 확인됨 — 단순히 relevance 정렬로 최대 100건만 받아 그 안에서 거리 계산하는 방식으로는 실제 근처 시설을 놓칠 수 있다. 그래서 서버 쪽 후보를 먼저 **행정구역(시/군/구) 단위**로 좁힌 뒤에만 클라이언트 거리 계산을 적용한다: 기기 좌표를 역지오코딩해 시/군/구 이름을 얻고, 이미 존재하는 `GET /codes/regions`로 이름→코드를 매칭해, 이미 존재하는 `/places/search`의 `ldongRegnCd`/`ldongSignguCd` 필터(수동 지역 검색과 동일한 필터)로 후보를 좁힌다. **정밀 좌표는 여전히 서버로 전송되지 않는다** — 서버가 받는 것은 좁혀진 행정구역 코드뿐이며, 이는 이미 존재하는 일반 검색 필터와 동일한 성격이라 새로운 서버 기능이 아니다. 이렇게 좁혀진 후보(최대 100건)에 대해서만 거리 계산·반경 필터·거리순 정렬을 적용한다.
 
 ## API 변경 (`apps/api`)
 
@@ -34,18 +34,20 @@
 
 ### 새 유틸
 
-- `src/lib/distance.ts`: 순수 함수 `getDistanceKm(a: {lat,lon}, b: {lat,lon}): number` — Haversine 공식. 외부 의존성 없음. TDD로 유닛 테스트 먼저 작성.
+- `src/lib/distance.ts`: 순수 함수 `getDistanceKm(a: {lat,lon}, b: {lat,lon}): number` — Haversine 공식. 외부 의존성 없음.
+- `src/lib/codes.ts`: `GET /codes/regions`(기존 엔드포인트) 클라이언트 함수.
+- `src/screens/Search/api/resolveNearbyRegion.ts`: 좌표 → 역지오코딩 → `/codes/regions` 이름 매칭 → `{ldongRegnCd, ldongSignguCd?}` 반환. 이름 매칭 실패 시 `null`(지역 필터 없이 거리순 진행, 정확도만 낮아짐).
 
 ### 타입/파라미터 정리
 
-- `src/lib/places.ts`의 `PlacesSearchParams`: `lat`/`lon`/`radiusKm` 제거, `sort`를 `'relevance' | 'recent'`로 축소(API DTO와 동일하게 유지).
+- `src/lib/places.ts`의 `PlacesSearchParams`: `lat`/`lon`/`radiusKm` 제거, `sort`를 `'relevance' | 'recent'`로 축소(API DTO와 동일하게 유지). `ldongRegnCd`/`ldongSignguCd`는 기존 필드 그대로 유지(이번에 거리순 모드가 이 필드를 채워 보낸다).
 - `src/types/place.ts`의 `distanceKm?: number`: 타입은 유지하되 "서버 응답 필드"가 아니라 "클라이언트가 계산해 붙이는 파생 필드"로 주석을 갱신한다.
 
 ### SearchScreen
 
 - 정렬 옵션에 **거리순**(클라이언트 계산) 추가.
-- 거리순 선택 시: (1) 위치 권한 요청 → 거부 시 relevance로 폴백 + 안내 메시지, (2) 허용 시 `/places/search`를 `size=100`(API 상한)으로 호출(다른 필터는 기존과 동일), (3) 응답의 각 아이템 `location`과 현재 위치로 `distance.ts`를 이용해 `distanceKm` 계산, (4) 선택된 반경으로 로컬 필터링, (5) 거리순 로컬 정렬 후 화면 표시.
-- 이 방식은 "받아온 최대 100건 중 가장 가까운 순"이지 "전체 데이터 중 진짜 최근접"은 아님 — 데이터 규모 확인 후 재검토 대상(위 배경 섹션 참고).
+- 거리순 선택 시: (1) 위치 권한 요청 → 거부 시 relevance로 폴백 + 안내 메시지, (2) 허용 시 좌표를 `resolveNearbyRegion`으로 시/군/구 코드로 변환, (3) `/places/search`를 그 코드(`ldongRegnCd`/`ldongSignguCd`)와 `size=100`(API 상한)으로 호출(다른 필터는 기존과 동일), (4) 응답의 각 아이템 `location`과 현재 위치로 `distance.ts`를 이용해 `distanceKm` 계산, (5) 선택된 반경으로 로컬 필터링, (6) 거리순 로컬 정렬 후 화면 표시.
+- 이 방식은 "사용자의 시/군/구 안에서 가장 가까운 순"이며, 인접 시/군/구 경계 바로 너머의 시설은 후보에서 빠질 수 있다 — 콘테스트 MVP 범위에서는 허용 가능한 트레이드오프로 판단.
 
 ### HomeScreen
 
@@ -63,4 +65,5 @@
 
 ## 후속 확인 필요 사항
 
-- ES 인덱스 문서 수(팀원 확인) → "배경" 섹션의 100건 제한이 실사용에 충분한지 재검토.
+- 역지오코딩 결과(iOS/Android 플랫폼별 `region`/`subregion`/`district` 값)가 `/codes/regions`의 시/군/구 명칭 표기와 실제로 잘 매칭되는지 기기 테스트로 확인 필요 — 표기가 다르면(예: "서울특별시" vs "서울시") 매칭 실패 → 지역 필터 없는 폴백으로 빠진다.
+- 인접 시/군/구 경계 근처 사용자를 위한 개선(예: 인접 시/군/구도 함께 조회)은 이번 스코프에서 제외 — 필요성이 확인되면 별도 브레인스토밍.
