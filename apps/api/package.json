@@ -25,6 +25,7 @@
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^8.19.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
@@ -80,15 +81,22 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": ["ts-jest", {
-        "useESM": true
-      }]
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "useESM": true
+        }
+      ]
     },
-    "extensionsToTreatAsEsm": [".ts"],
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
     "moduleNameMapper": {
       "^(\\.{1,2}/.*)\\.js$": "$1"
     },
-    "transformIgnorePatterns": ["node_modules/(?!(@nestjs|@prisma|passport-jwt|passport|jsonwebtoken)/)"],
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@nestjs|@prisma|passport-jwt|passport|jsonwebtoken)/)"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],

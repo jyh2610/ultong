@@ -1,10 +1,20 @@
 {
+  "_note": "es-설계.md(2026-09-13, TAGGER_VERSION 1.2.0) 기준 정확한 스키마. 실제 라이브 인덱스(pettour-place, 10152건, 배치가 이미 적재)는 이 문서보다 앞서 단순화된 매핑으로 만들어졌다 — dynamic:false라 이 문서에만 있고 라이브 매핑에 없는 필드도 _source에는 보존되어 있지만 필터/집계는 안 된다. 실제 재색인은 scripts/reindex_place.py(팀원 소유)로 한다.",
+  "settings": {
+    "number_of_shards": 1
+  },
   "mappings": {
+    "dynamic": false,
     "properties": {
+      "content_id": { "type": "keyword" },
       "title": { "type": "text" },
       "overview": { "type": "text" },
+      "tel": { "type": "keyword" },
+      "tel_name": { "type": "keyword" },
+      "homepage_url": { "type": "keyword" },
       "addr1": { "type": "text" },
-      "thumb": { "type": "keyword" },
+      "addr2": { "type": "text" },
+      "zipcode": { "type": "keyword" },
       "location": { "type": "geo_point" },
       "category": {
         "properties": {
@@ -20,55 +30,83 @@
           "ldong_signgu_cd": { "type": "keyword" }
         }
       },
-      "sync": {
+      "media": {
         "properties": {
-          "is_active": { "type": "boolean" },
-          "modified_at": { "type": "date" },
-          "intro_checked_at": { "type": "date" }
+          "first_image": { "type": "keyword" },
+          "thumb": { "type": "keyword" },
+          "images": { "type": "object", "enabled": false }
+        }
+      },
+      "pet_raw": {
+        "properties": {
+          "area_type": { "type": "text" },
+          "possible_pet": { "type": "text" },
+          "need_matter": { "type": "text" },
+          "etc_info": { "type": "text" },
+          "risk_matter": { "type": "text" },
+          "facility": { "type": "text" },
+          "rental": { "type": "text" },
+          "purchase": { "type": "text" },
+          "furnish": { "type": "text" }
         }
       },
       "pet_tags": {
         "properties": {
           "pet_allowed": { "type": "boolean" },
-          "confidence": { "type": "keyword" },
-          "confidence_score": { "type": "float" },
           "weight_limit_kg": { "type": "float" },
           "weight_op": { "type": "keyword" },
           "weight_is_estimated": { "type": "boolean" },
           "size_max": { "type": "keyword" },
-          "area_scope": { "type": "keyword" },
-          "cage_required": { "type": "boolean" },
-          "stroller_allowed": { "type": "boolean" },
+          "max_pets": { "type": "integer" },
+          "breed_excluded": { "type": "keyword" },
           "leash_required": { "type": "boolean" },
-          "muzzle_required": { "type": "boolean" },
-          "muzzle_required_for_dangerous": { "type": "boolean" },
+          "cage_required": { "type": "boolean" },
           "manner_belt_required": { "type": "boolean" },
           "vaccination_required": { "type": "boolean" },
           "poop_bag_required": { "type": "boolean" },
-          "outdoor_allowed": { "type": "boolean" },
+          "muzzle_required": { "type": "boolean" },
+          "muzzle_required_for_dangerous": { "type": "boolean" },
+          "stroller_allowed": { "type": "boolean" },
+          "area_scope": { "type": "keyword" },
           "indoor_allowed": { "type": "boolean" },
-          "breed_excluded": { "type": "keyword" },
+          "outdoor_allowed": { "type": "boolean" },
+          "confidence": { "type": "keyword" },
+          "confidence_score": { "type": "float" },
           "matched_rules": { "type": "keyword" },
-          "tagged_at": { "type": "date" },
-          "tagger_version": { "type": "keyword" }
+          "tagger_version": { "type": "keyword" },
+          "tagged_at": { "type": "date" }
         }
       },
-      "pet_raw": {
+      "pet_evidence": { "type": "object", "enabled": false },
+      "intro": { "type": "object", "enabled": false },
+      "info": { "type": "object", "enabled": false },
+      "info_count": { "type": "integer" },
+      "semantic": {
+        "type": "nested",
         "properties": {
-          "possible_pet": { "type": "text" },
-          "need_matter": { "type": "text" },
-          "etc_info": { "type": "text" }
+          "text": { "type": "text" },
+          "source_field": { "type": "keyword" },
+          "vector": { "type": "dense_vector", "dims": 1024, "index": true, "similarity": "cosine" }
         }
       },
-      "pet_evidence": { "type": "object", "enabled": true },
       "report": {
         "properties": {
-          "warning": { "type": "boolean" },
           "count": { "type": "integer" },
+          "warning": { "type": "boolean" },
           "last_reported_at": { "type": "date" }
         }
       },
-      "intro": { "type": "object", "enabled": false }
+      "sync": {
+        "properties": {
+          "is_active": { "type": "boolean" },
+          "modified_at": { "type": "date" },
+          "intro_fetched_at": { "type": "date" },
+          "intro_checked_at": { "type": "date" },
+          "inactive_reason": { "type": "keyword" },
+          "deactivated_at": { "type": "date" },
+          "listed_at": { "type": "date" }
+        }
+      }
     }
   }
 }

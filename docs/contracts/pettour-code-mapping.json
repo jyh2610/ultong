@@ -1,5 +1,7 @@
 {
+  "_note": "라이브 인덱스(pettour-code, 600건, 배치가 이미 적재)와 검증됨. ingested_at은 배치가 추가로 채우지만 NestJS는 쓰지 않는다.",
   "mappings": {
+    "dynamic": false,
     "properties": {
       "code_type": { "type": "keyword" },
       "code": { "type": "keyword" },
@@ -7,7 +9,8 @@
       "parent_code": { "type": "keyword" },
       "parent_name": { "type": "keyword" },
       "depth": { "type": "integer" },
-      "path": { "type": "keyword" }
+      "path": { "type": "keyword" },
+      "ingested_at": { "type": "date" }
     }
   }
 }
