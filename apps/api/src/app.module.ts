@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { SearchModule } from './search/search.module';
 import { PetsModule } from './pets/pets.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FavoritesModule } from './favorites/favorites.module';
     SearchModule,
     PetsModule,
     FavoritesModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
