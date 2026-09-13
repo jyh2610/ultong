@@ -127,4 +127,48 @@ describe('UsersService', () => {
       },
     });
   });
+
+  it('findById() looks up an active (non-deleted) user by id', async () => {
+    prisma.user.findFirst.mockResolvedValue({ id: 8n, nickname: '멍냥이' });
+
+    const result = await service.findById(8n);
+
+    expect(prisma.user.findFirst).toHaveBeenCalledWith({
+      where: { id: 8n, deletedAt: null },
+    });
+    expect(result).toEqual({ id: 8n, nickname: '멍냥이' });
+  });
+
+  it('updateProfile() updates only the given fields', async () => {
+    prisma.user.update.mockResolvedValue({ id: 8n, nickname: '새이름' });
+
+    await service.updateProfile(8n, { nickname: '새이름' });
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: 8n },
+      data: { nickname: '새이름' },
+    });
+  });
+
+  it('updateProfile() updates profileImageUrl when given', async () => {
+    prisma.user.update.mockResolvedValue({ id: 8n });
+
+    await service.updateProfile(8n, { profileImageUrl: 'https://x/y.png' });
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: 8n },
+      data: { profileImageUrl: 'https://x/y.png' },
+    });
+  });
+
+  it('softDelete() sets deletedAt for the given user id', async () => {
+    prisma.user.update.mockResolvedValue({ id: 8n, deletedAt: new Date() });
+
+    await service.softDelete(8n);
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: 8n },
+      data: { deletedAt: expect.any(Date) as Date },
+    });
+  });
 });

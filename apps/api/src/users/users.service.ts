@@ -47,6 +47,24 @@ export class UsersService {
     });
   }
 
+  findById(id: bigint): Promise<User | null> {
+    return this.prisma.user.findFirst({ where: { id, deletedAt: null } });
+  }
+
+  updateProfile(
+    id: bigint,
+    params: { nickname?: string; profileImageUrl?: string },
+  ): Promise<User> {
+    return this.prisma.user.update({ where: { id }, data: params });
+  }
+
+  softDelete(id: bigint): Promise<User> {
+    return this.prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
   createOAuth(params: {
     provider: AuthProvider;
     providerUid: string;
