@@ -9,6 +9,7 @@ import { SearchModule } from './search/search.module';
 import { PetsModule } from './pets/pets.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { ReportsModule } from './reports/reports.module';
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ReportsModule } from './reports/reports.module';
     PetsModule,
     FavoritesModule,
     ReportsModule,
+    CoursesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
