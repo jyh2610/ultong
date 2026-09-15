@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FlatList, ScrollView, View } from "react-native";
+import { ActivityIndicator, FlatList, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "../../components/AppText";
@@ -11,20 +11,27 @@ import { FadeIn } from "../../components/FadeIn";
 import { CloseIcon } from "../../components/icons/CloseIcon";
 import { LocationPinIcon } from "../../components/icons/LocationPinIcon";
 import { SearchIcon } from "../../components/icons/SearchIcon";
-import { computeMatch } from "../../lib/matching";
+import { usePets } from "../../hooks/usePets";
+import { useSearchPlaces } from "../../hooks/usePlaces";
+import { useMyLocation } from "../../hooks/useMyLocation";
+import { pickDefaultPet } from "../../lib/pets";
+import { toPlaceSummary } from "../../lib/places";
 import { sizeOf } from "../../lib/petSize";
-import { usePetStore } from "../../store/petStore";
 import { useSearchHistoryStore } from "../../store/searchHistoryStore";
-import { useFacilities } from "../../hooks/useFacilities";
 import { HOME_CATEGORIES, POPULAR_REGIONS } from "./constants";
 import type { HomeScreenProps } from "./types";
 
 const SKELETON_KEYS = ["skeleton-0", "skeleton-1", "skeleton-2"];
 
 export function HomeScreen({ navigation }: HomeScreenProps) {
-  const pets = usePetStore((state) => state.pets);
-  const pet = pets[0];
-  const { data: facilities, isPending } = useFacilities();
+  const { data: pets = [] } = usePets();
+  const myLocation = useMyLocation();
+  const pet = pickDefaultPet(pets);
+  const { data, isPending, fetchNextPage, hasNextPage, isFetchingNextPage } = useSearchPlaces({
+    weightKg: pet?.weightKg,
+    hasCage: pet?.hasCage,
+    size: 3,
+  });
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const recentQueries = useSearchHistoryStore((state) => state.recentQueries);
@@ -37,12 +44,13 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
     navigation.getParent()?.navigate("Search", { query: q });
   };
 
-  const recommendations =
-    pet && facilities
-      ? facilities
-          .map((facility) => ({ facility, match: computeMatch(pet, facility) }))
-          .slice(0, 3)
-      : [];
+  const handleNearbyPress = async () => {
+    const coords = await myLocation.request();
+    if (!coords) return;
+    navigation.getParent()?.navigate("Search", { autoDistanceSort: true });
+  };
+
+  const recommendations = (data?.pages.flatMap((page) => page.items) ?? []).map(toPlaceSummary);
 
   return (
     <View className="flex-1 bg-screen" style={{ paddingTop: insets.top }}>
@@ -106,7 +114,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           </View>
         )}
         <PressableScale
-          onPress={() => navigation.getParent()?.navigate("Search", {})}
+          onPress={handleNearbyPress}
           className="mb-4 w-full flex-row items-center gap-2 rounded-2xl border border-card-border-alt bg-[#EEF5F0] px-4 py-3"
         >
           <LocationPinIcon color="#7A4A2B" />
@@ -114,6 +122,11 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             내 주변 반려동반 가능 시설 보기
           </Text>
         </PressableScale>
+        {myLocation.status === "denied" && (
+          <Text className="mb-4 -mt-2 text-label text-ink-faint">
+            위치 권한을 허용하면 내 주변 시설을 볼 수 있어요
+          </Text>
+        )}
         <FlatList
           horizontal
           data={HOME_CATEGORIES}
@@ -132,7 +145,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
         <Text className="mb-1 text-subtitle font-bold text-ink">우리 아이 조건에 맞는 추천</Text>
         {pet && (
           <Text className="mb-3.5 text-footnote text-ink-soft">
-            {pet.name}({sizeOf(pet.weight)}견 · {pet.weight}kg) 기준
+            {pet.name}({sizeOf(pet.weightKg)}견 · {pet.weightKg}kg) 기준
           </Text>
         )}
         {isPending ? (
@@ -149,15 +162,19 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             <FlatList
               horizontal
               data={recommendations}
-              keyExtractor={(item) => item.facility.id}
+              keyExtractor={(item) => item.contentId}
               showsHorizontalScrollIndicator={false}
               contentContainerClassName="gap-3 mb-6.5"
+              onEndReached={() => hasNextPage && fetchNextPage()}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                isFetchingNextPage ? <ActivityIndicator className="px-4" color="#7A4A2B" /> : null
+              }
               renderItem={({ item }) => (
                 <FacilityCarouselCard
-                  facility={item.facility}
-                  match={item.match}
+                  place={item}
                   onPress={() =>
-                    navigation.getParent()?.navigate("Detail", { facilityId: item.facility.id })
+                    navigation.getParent()?.navigate("Detail", { facilityId: item.contentId })
                   }
                 />
               )}
