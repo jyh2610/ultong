@@ -1,39 +1,79 @@
+import { useState } from "react";
 import { ScrollView, Share, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackIcon } from "../../components/icons/BackIcon";
-import { CheckIcon } from "../../components/icons/CheckIcon";
-import { CloseIcon } from "../../components/icons/CloseIcon";
 import { ShareIcon } from "../../components/icons/ShareIcon";
 import { Text } from "../../components/AppText";
 import { PressableScale } from "../../components/PressableScale";
 import { ChecklistItem } from "../../components/ChecklistItem";
+import { EmptyState } from "../../components/EmptyState";
 import { FadeIn } from "../../components/FadeIn";
+import { FavoriteButton } from "../../components/FavoriteButton";
 import { StatusBadge } from "../../components/StatusBadge";
-import { checklistFor, computeMatch } from "../../lib/matching";
+import { useMyCourse, useToggleCourseItem } from "../../hooks/useCourse";
+import { usePets } from "../../hooks/usePets";
+import { usePlaceDetail } from "../../hooks/usePlaces";
+import { useCreateReport, useReports } from "../../hooks/useReports";
+import { checklistFor } from "../../lib/checklist";
+import { pickDefaultPet } from "../../lib/pets";
+import { REPORT_STATUS_LABEL, REPORT_TYPE_LABEL, REPORT_TYPE_ORDER } from "../../lib/reports";
+import type { ReportType } from "../../lib/reports";
+import { CONFIDENCE_LABEL } from "../../lib/statusColor";
 import { useCourseStore } from "../../store/courseStore";
-import { usePetStore } from "../../store/petStore";
-import { useReportStore } from "../../store/reportStore";
 import { useToastStore } from "../../store/toastStore";
-import { useFacility } from "../../hooks/useFacilities";
+import { INTRO_FIELD_LABELS, INTRO_FIELD_ORDER, INTRO_SOURCE_LABEL } from "./constants";
 import { DetailScreenSkeleton } from "./ui/DetailScreenSkeleton";
 import type { DetailScreenProps } from "./types";
 
+function formatIntroEntries(intro: Record<string, unknown> | null): { label: string; value: string }[] {
+  if (!intro) return [];
+  return INTRO_FIELD_ORDER.filter((key) => typeof intro[key] === "string" && intro[key] !== "").map(
+    (key) => ({ label: INTRO_FIELD_LABELS[key], value: intro[key] as string }),
+  );
+}
+
 export function DetailScreen({ navigation, route }: DetailScreenProps) {
   const { facilityId } = route.params;
-  const { data: facility, isPending } = useFacility(facilityId);
-  const pet = usePetStore((state) => state.pets[0]);
-  const savedIds = useCourseStore((state) => state.savedIds);
-  const toggleSaved = useCourseStore((state) => state.toggleSaved);
+  const [showTypePicker, setShowTypePicker] = useState(false);
+  const { data: pets = [], isPending: petsPending } = usePets();
+  const pet = pickDefaultPet(pets);
+  const { data: place, isPending: placePending } = usePlaceDetail(facilityId, {
+    weightKg: pet?.weightKg,
+    hasCage: pet?.hasCage,
+  });
+  const { data: myReports = [] } = useReports(facilityId);
+  const createReport = useCreateReport();
+  const { course, isPending: coursePending } = useMyCourse();
+  const toggleCourseItem = useToggleCourseItem();
+  const isPending = petsPending || placePending || coursePending;
   const checkedPrep = useCourseStore((state) => state.checkedPrep);
   const togglePrep = useCourseStore((state) => state.togglePrep);
-  const addReport = useReportStore((state) => state.addReport);
-  const hasReported = useReportStore((state) => state.hasReported);
   const showToast = useToastStore((state) => state.show);
   const insets = useSafeAreaInsets();
 
-  if (isPending || !pet) return <DetailScreenSkeleton />;
-  if (!facility) {
+  if (isPending) return <DetailScreenSkeleton />;
+
+  if (!pet) {
+    return (
+      <View className="flex-1 bg-screen" style={{ paddingTop: insets.top }}>
+        <PressableScale
+          onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="뒤로 가기"
+          className="ml-3.5 mt-3.5 h-[34px] w-[34px] items-center justify-center rounded-full border border-card-border-alt bg-card"
+        >
+          <BackIcon color="#1C1C1E" />
+        </PressableScale>
+        <EmptyState
+          title="반려동물 프로필이 필요해요"
+          description={"마이페이지에서 반려동물 정보를\n등록하면 조건 매칭 결과를 볼 수 있어요"}
+        />
+      </View>
+    );
+  }
+
+  if (!place) {
     return (
       <View className="flex-1 items-center justify-center bg-screen px-5" style={{ paddingTop: insets.top }}>
         <PressableScale
@@ -50,15 +90,32 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
     );
   }
 
-  const match = computeMatch(pet, facility);
-  const checklist = checklistFor(facility);
-  const saved = savedIds.includes(facility.id);
-  const alertFlag = facility.reportCount >= 3;
-  const reported = hasReported(facility.id);
+  const checklist = checklistFor(place.pet_tags ?? {});
+  const saved = !!course?.items?.some((item) => item.contentId === place.contentId);
+  const reported = myReports.length > 0;
+  const latestStatusLabel = myReports[0] ? REPORT_STATUS_LABEL[myReports[0].status] : null;
+  const introEntries = formatIntroEntries(place.intro);
+  const introCheckedAt = new Date(place.introCheckedAt);
+
+  const handleReportType = (type: ReportType) => {
+    createReport.mutate(
+      { contentId: place.contentId, type },
+      {
+        onSuccess: () => {
+          setShowTypePicker(false);
+          showToast(
+            reported ? "다시 제보했어요. 검토 후 반영할게요" : "제보가 접수되었어요. 검토 후 반영할게요",
+          );
+        },
+      },
+    );
+  };
 
   const handleShare = () => {
     Share.share({
-      message: `[멍냥로드] ${facility.name}\n${facility.category} · ${facility.region}\n${facility.address}\n${facility.hours}\n\n반려동반 조건 매칭 결과: ${match.status}`,
+      message: `[멍냥로드] ${place.title}\n${place.category?.content_type ?? ""} · ${
+        place.region?.sido ?? ""
+      }\n${place.addr1 ?? ""}\n\n반려동반 조건 매칭 결과: ${CONFIDENCE_LABEL[place.match.confidence]}`,
     }).catch(() => {});
   };
 
@@ -90,59 +147,66 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
           <View className="mb-3 flex-row items-start justify-between gap-2.5">
             <View>
               <Text className="mb-1 text-label text-ink-soft">
-                {facility.category} · {facility.region}
+                {place.category?.content_type ?? ""} · {place.region?.sido ?? ""}
               </Text>
-              <Text className="text-headline font-bold text-ink">{facility.name}</Text>
-              <Text className="mt-0.5 text-footnote text-ink-soft">{facility.type}</Text>
+              <Text className="text-headline font-bold text-ink">{place.title}</Text>
             </View>
-            <StatusBadge status={match.status} />
+            <View className="flex-row items-center gap-2">
+              <StatusBadge verdict={place.match.verdict} />
+              <FavoriteButton contentId={place.contentId} />
+            </View>
           </View>
-          {alertFlag && (
-            <View className="mb-3.5 flex-row items-center gap-2 rounded-xl border border-alert-border bg-alert-bg px-3.5 py-2.5">
-              <Text className="flex-1 text-footnote font-semibold text-alert-text">
-                ⚠ 최근 제보가 누적된 시설이에요 — 방문 전 규정 변경 여부를 다시 확인해보세요
-              </Text>
-            </View>
-          )}
           <View className="mb-5.5 gap-1.5 rounded-2xl border border-card-border bg-card p-3.5">
-            <Text className="text-footnote text-[#4A4A4C]">{facility.address}</Text>
-            <Text className="text-footnote text-[#4A4A4C]">{facility.hours}</Text>
-            <Text className="text-footnote text-ink-faint">최종 데이터 갱신일 {facility.updated}</Text>
+            {place.addr1 && <Text className="text-footnote text-[#4A4A4C]">{place.addr1}</Text>}
+            {introEntries.map((entry) => (
+              <Text key={entry.label} className="text-footnote text-[#4A4A4C]">
+                {entry.label} {entry.value}
+              </Text>
+            ))}
+            <Text className="text-footnote text-ink-faint">
+              {INTRO_SOURCE_LABEL[place.introSource]} 확인 ·{" "}
+              {`${introCheckedAt.getMonth() + 1}.${introCheckedAt.getDate()} ${introCheckedAt.getHours()}:${String(
+                introCheckedAt.getMinutes(),
+              ).padStart(2, "0")}`}
+            </Text>
           </View>
           <View className="mb-2.5 flex-row items-center justify-between">
             <Text className="text-subtitle font-bold text-ink">조건 매칭 결과</Text>
-            <Text className="text-caption text-ink-faint">{pet.name} 기준</Text>
+            <Text className="text-caption font-bold text-ink-faint">
+              {pet.name} 기준 · {CONFIDENCE_LABEL[place.match.confidence]}
+            </Text>
           </View>
           <View className="mb-2 rounded-2xl border border-card-border bg-card">
-            {match.reasons.map((reason, index) => (
+            {place.match.reasons.map((reason, index) => (
               <View
                 key={index}
                 className={`flex-row items-center gap-2.5 px-3.5 py-2.5 ${
-                  index < match.reasons.length - 1 ? "border-b border-[#F4F1EA]" : ""
+                  index < place.match.reasons.length - 1 ? "border-b border-[#F4F1EA]" : ""
                 }`}
               >
-                <View
-                  className={`h-5 w-5 items-center justify-center rounded-full ${
-                    reason.ok ? "bg-[#2FA968]" : "bg-[#D64545]"
-                  }`}
-                >
-                  {reason.ok ? <CheckIcon color="#fff" /> : <CloseIcon color="#fff" />}
-                </View>
-                <Text className="flex-1 text-body text-ink">{reason.label}</Text>
-                <Text
-                  className={`text-caption font-bold ${
-                    reason.confidence === "확실" ? "text-status-ok-fg" : "text-status-conditional-fg"
-                  }`}
-                >
-                  {reason.confidence}
-                </Text>
+                <Text className="flex-1 text-body text-ink">{reason}</Text>
               </View>
             ))}
+            {place.match.areaRestricted && (
+              <View className="border-t border-[#F4F1EA] px-3.5 py-2.5">
+                <Text className="text-caption font-bold text-status-conditional-fg">
+                  일부 구역 제한
+                </Text>
+              </View>
+            )}
           </View>
-          <View className="mb-2.5 rounded-xl border border-dashed border-quote-border bg-quote-bg px-3.5 py-3">
-            <Text className="mb-1.5 text-caption font-bold text-[#9A8B6E]">원문 근거</Text>
-            <Text className="text-footnote italic leading-5 text-quote-text">&quot;{facility.rawText}&quot;</Text>
-          </View>
+          {(place.pet_raw?.possible_pet || place.pet_raw?.need_matter || place.pet_raw?.etc_info) && (
+            <View className="mb-2.5 rounded-xl border border-dashed border-quote-border bg-quote-bg px-3.5 py-3">
+              <Text className="mb-1.5 text-caption font-bold text-[#9A8B6E]">원문 근거</Text>
+              <Text className="text-footnote italic leading-5 text-quote-text">
+                &quot;
+                {[place.pet_raw?.possible_pet, place.pet_raw?.need_matter, place.pet_raw?.etc_info]
+                  .filter(Boolean)
+                  .join(" · ")}
+                &quot;
+              </Text>
+            </View>
+          )}
           <Text className="mb-6 text-caption leading-5 text-ink-faint">
             &apos;확실&apos;은 원문에 조건이 명시된 경우, &apos;추정&apos;은 원문이 모호해 일반 기준을
             적용한 경우예요.
@@ -158,26 +222,51 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
               />
             ))}
           </View>
-          <PressableScale
-            onPress={() => {
-              addReport(facility.id, facility.name);
-              showToast(
-                reported ? "다시 제보했어요. 검토 후 반영할게요" : "제보가 접수되었어요. 검토 후 반영할게요",
-              );
-            }}
-            className="mb-3.5 rounded-2xl border border-card-border-alt bg-card p-3.5"
-          >
-            <Text className="text-center text-body font-semibold text-ink-soft">
-              {reported ? "제보 완료 · 검토중 (다시 제보하기)" : "실제 규정이 다른가요? 제보하기"}
-            </Text>
-          </PressableScale>
+          {showTypePicker ? (
+            <View className="mb-3.5 rounded-2xl border border-card-border-alt bg-card p-3.5">
+              <Text className="mb-2.5 text-body font-semibold text-ink-soft">어떤 문제인가요?</Text>
+              <View className="flex-row flex-wrap gap-2">
+                {REPORT_TYPE_ORDER.map((type) => (
+                  <PressableScale
+                    key={type}
+                    onPress={() => handleReportType(type)}
+                    className="rounded-full border border-card-border-alt bg-quote-bg px-3 py-1.5"
+                  >
+                    <Text className="text-label font-semibold text-ink">{REPORT_TYPE_LABEL[type]}</Text>
+                  </PressableScale>
+                ))}
+                <PressableScale
+                  onPress={() => setShowTypePicker(false)}
+                  className="rounded-full px-3 py-1.5"
+                >
+                  <Text className="text-label text-ink-faint">취소</Text>
+                </PressableScale>
+              </View>
+            </View>
+          ) : (
+            <PressableScale
+              onPress={() => setShowTypePicker(true)}
+              className="mb-3.5 rounded-2xl border border-card-border-alt bg-card p-3.5"
+            >
+              <Text className="text-center text-body font-semibold text-ink-soft">
+                {reported
+                  ? `제보 완료 · ${latestStatusLabel} (다시 제보하기)`
+                  : "실제 규정이 다른가요? 제보하기"}
+              </Text>
+            </PressableScale>
+          )}
         </View>
       </ScrollView>
       <View className="px-5 pt-3" style={{ paddingBottom: insets.bottom + 26 }}>
         <PressableScale
           onPress={() => {
-            const nowSaved = toggleSaved(facility.id);
-            showToast(nowSaved ? "코스에 담았어요" : "코스에서 제거했어요");
+            toggleCourseItem.mutate(
+              { course, contentId: place.contentId, title: place.title },
+              {
+                onSuccess: (result) =>
+                  showToast(result?.saved ? "코스에 담았어요" : "코스에서 제거했어요"),
+              },
+            );
           }}
           className={`rounded-2xl p-4 ${saved ? "bg-status-check-bg" : "bg-primary"}`}
         >

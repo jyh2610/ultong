@@ -1,7 +1,9 @@
+import { cssInterop } from "nativewind";
 import { Pressable, type PressableProps } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+cssInterop(AnimatedPressable, { className: "style" });
 
 type PressableScaleProps = Omit<PressableProps, "style"> & {
   style?: Exclude<PressableProps["style"], Function>;

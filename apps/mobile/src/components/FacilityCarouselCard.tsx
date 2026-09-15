@@ -3,27 +3,22 @@ import { View } from "react-native";
 import { Text } from "./AppText";
 import { PressableScale } from "./PressableScale";
 import { StatusBadge } from "./StatusBadge";
-import type { Facility, MatchResult } from "../types/facility";
+import type { PlaceSummary } from "../types/place";
 
 type FacilityCarouselCardProps = {
-  facility: Facility;
-  match: MatchResult;
+  place: PlaceSummary;
   onPress: () => void;
 };
 
-export function FacilityCarouselCard({ facility, match, onPress }: FacilityCarouselCardProps) {
-  const alertFlag = facility.reportCount >= 3;
+export function FacilityCarouselCard({ place, onPress }: FacilityCarouselCardProps) {
   return (
     <PressableScale onPress={onPress} className="w-[172px]">
       <View className="mb-2 h-[112px] w-[172px] rounded-2xl bg-[#EEE9E0]" />
-      <StatusBadge status={match.status} />
+      <StatusBadge verdict={place.match.verdict} />
       <Text className="mt-1.5 text-body-lg font-bold text-ink">
-        {facility.name} · {facility.type}
+        {place.title} · {place.typeLabel}
       </Text>
-      <Text className="text-label text-ink-soft">{facility.region}</Text>
-      {alertFlag && (
-        <Text className="mt-1 text-caption font-semibold text-alert-text">⚠ 규정 변경 가능성</Text>
-      )}
+      <Text className="text-label text-ink-soft">{place.regionLabel}</Text>
     </PressableScale>
   );
 }

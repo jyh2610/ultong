@@ -261,4 +261,24 @@ describe('PlacesService', () => {
     expect(result.page).toBe(2);
     expect(result.size).toBe(10);
   });
+
+  it('sets hasNext true when more results remain past the current page', async () => {
+    search.mockResolvedValue(
+      esResponse({ hits: { total: { value: 42 }, hits: [] } }),
+    );
+
+    const result = await service.search(baseDto({ page: 2, size: 10 }));
+
+    expect(result.hasNext).toBe(true);
+  });
+
+  it('sets hasNext false when the current page reaches the total', async () => {
+    search.mockResolvedValue(
+      esResponse({ hits: { total: { value: 20 }, hits: [] } }),
+    );
+
+    const result = await service.search(baseDto({ page: 2, size: 10 }));
+
+    expect(result.hasNext).toBe(false);
+  });
 });

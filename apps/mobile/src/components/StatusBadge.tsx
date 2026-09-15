@@ -1,20 +1,20 @@
 import { View } from "react-native";
 
 import { Text } from "./AppText";
-import { statusColor } from "../lib/statusColor";
-import type { MatchStatus } from "../types/facility";
+import { statusColor, VERDICT_LABEL } from "../lib/statusColor";
+import type { Verdict } from "../types/place";
 
 type StatusBadgeProps = {
-  status: MatchStatus;
+  verdict: Verdict;
 };
 
-export function StatusBadge({ status }: StatusBadgeProps) {
-  const { bg, fg } = statusColor(status);
+export function StatusBadge({ verdict }: StatusBadgeProps) {
+  const { bg, fg } = statusColor(verdict);
   return (
     <View
       className={`min-w-[66px] items-center justify-center self-start rounded-md px-2 py-1 ${bg}`}
     >
-      <Text className={`text-center text-caption font-bold ${fg}`}>{status}</Text>
+      <Text className={`text-center text-caption font-bold ${fg}`}>{VERDICT_LABEL[verdict]}</Text>
     </View>
   );
 }

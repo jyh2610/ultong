@@ -6,6 +6,7 @@ export interface Pet {
   name: string;
   species: Species;
   breed: string;
-  weight: number;
+  weightKg: number;
   hasCage: boolean;
+  isDefault: boolean;
 }

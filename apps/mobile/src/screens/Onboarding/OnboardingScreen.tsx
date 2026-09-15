@@ -4,15 +4,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "../../components/AppText";
 import { PressableScale } from "../../components/PressableScale";
 import { PetProfileCard } from "../../components/PetProfileCard";
-import { usePetStore } from "../../store/petStore";
+import { useCreatePet, useDeletePet, usePets, useUpdatePet } from "../../hooks/usePets";
 import { useToastStore } from "../../store/toastStore";
 import type { OnboardingScreenProps } from "./types";
 
 export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
-  const pets = usePetStore((state) => state.pets);
-  const addPet = usePetStore((state) => state.addPet);
-  const updatePet = usePetStore((state) => state.updatePet);
-  const removePet = usePetStore((state) => state.removePet);
+  const { data: pets = [] } = usePets();
+  const createPet = useCreatePet();
+  const updatePet = useUpdatePet();
+  const deletePet = useDeletePet();
   const showToast = useToastStore((state) => state.show);
   const insets = useSafeAreaInsets();
 
@@ -32,18 +32,19 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
           <PetProfileCard
             key={pet.id}
             pet={pet}
-            onChange={(patch) => updatePet(pet.id, patch)}
-            onRemove={() => {
-              if (pets.length <= 1) {
-                showToast("최소 1마리는 등록되어 있어야 해요");
-                return;
-              }
-              removePet(pet.id);
-            }}
+            onCommit={(patch) => updatePet.mutate({ id: pet.id, patch })}
+            onRemove={() => deletePet.mutate(pet.id)}
           />
         ))}
         <PressableScale
-          onPress={addPet}
+          onPress={() =>
+            createPet.mutate({
+              name: `반려동물 ${pets.length + 1}`,
+              species: "강아지",
+              weightKg: 5,
+              hasCage: false,
+            })
+          }
           className="w-full rounded-2xl border-[1.5px] border-dashed border-[#C9CABF] p-3.5"
         >
           <Text className="text-center text-body font-semibold text-ink-soft">
@@ -59,7 +60,13 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
           입력한 조건으로 바로 맞는 장소를 추천해드려요
         </Text>
         <PressableScale
-          onPress={() => navigation.replace("MainTabs")}
+          onPress={() => {
+            if (pets.length === 0) {
+              showToast("반려동물을 최소 1마리 등록해주세요");
+              return;
+            }
+            navigation.replace("MainTabs");
+          }}
           className="w-full rounded-2xl bg-primary p-4"
         >
           <Text className="text-center text-subtitle font-bold text-white">시작하기</Text>

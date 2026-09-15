@@ -8,30 +8,36 @@ import { FadeIn } from "../../components/FadeIn";
 import { SavedFacilityRow } from "../../components/SavedFacilityRow";
 import { SavedFacilityRowSkeleton } from "../../components/SavedFacilityRowSkeleton";
 import { ToggleSwitch } from "../../components/ToggleSwitch";
-import { computeMatch, mergeChecklists } from "../../lib/matching";
+import { useMyCourse } from "../../hooks/useCourse";
+import { usePets } from "../../hooks/usePets";
+import { usePlacesByIds } from "../../hooks/usePlaces";
+import { mergeChecklists } from "../../lib/checklist";
+import { pickDefaultPet } from "../../lib/pets";
+import { placeDetailToSummary } from "../../lib/places";
 import { useCourseStore } from "../../store/courseStore";
 import { useOfflineStore } from "../../store/offlineStore";
-import { usePetStore } from "../../store/petStore";
-import { useFacilities } from "../../hooks/useFacilities";
 import type { OfflineScreenProps } from "./types";
 
 const SKELETON_KEYS = ["skeleton-0", "skeleton-1"];
 
 export function OfflineScreen({ navigation }: OfflineScreenProps) {
-  const pet = usePetStore((state) => state.pets[0]);
-  const savedIds = useCourseStore((state) => state.savedIds);
+  const { data: pets = [] } = usePets();
+  const pet = pickDefaultPet(pets);
+  const { course, isPending: coursePending } = useMyCourse();
   const checkedPrep = useCourseStore((state) => state.checkedPrep);
   const togglePrep = useCourseStore((state) => state.togglePrep);
   const offlineSaved = useOfflineStore((state) => state.offlineSaved);
   const setOfflineSaved = useOfflineStore((state) => state.setOfflineSaved);
-  const { data: facilities, isPending } = useFacilities();
+  const items = course?.items ?? [];
+  const { data: places, isPending: placesPending } = usePlacesByIds(
+    items.map((item) => item.contentId),
+    { weightKg: pet?.weightKg, hasCage: pet?.hasCage },
+  );
+  const isPending = coursePending || (items.length > 0 && placesPending);
   const insets = useSafeAreaInsets();
 
-  const facilityById = new Map(facilities?.map((f) => [f.id, f]));
-  const saved = savedIds
-    .map((id) => facilityById.get(id))
-    .filter((f): f is NonNullable<typeof f> => !!f);
-  const mergedChecklist = mergeChecklists(saved);
+  const saved = places ?? [];
+  const mergedChecklist = mergeChecklists(saved.map((p) => p.pet_tags));
 
   return (
     <View className="flex-1 bg-screen px-5" style={{ paddingTop: insets.top + 16 }}>
@@ -65,13 +71,14 @@ export function OfflineScreen({ navigation }: OfflineScreenProps) {
         <FadeIn className="flex-1">
           <FlatList
             data={saved}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.contentId}
             renderItem={({ item, index }) => (
               <SavedFacilityRow
-                facility={item}
-                match={computeMatch(pet, item)}
+                place={placeDetailToSummary(item)}
                 order={index + 1}
-                onPress={() => navigation.getParent()?.navigate("Detail", { facilityId: item.id })}
+                onPress={() =>
+                  navigation.getParent()?.navigate("Detail", { facilityId: item.contentId })
+                }
               />
             )}
             ListFooterComponent={

@@ -8,31 +8,46 @@ import { FadeIn } from "../../components/FadeIn";
 import { SavedFacilityRow } from "../../components/SavedFacilityRow";
 import { SavedFacilityRowSkeleton } from "../../components/SavedFacilityRowSkeleton";
 import { Skeleton } from "../../components/Skeleton";
-import { computeMatch, mergeChecklists } from "../../lib/matching";
+import { useMyCourse, useReorderCourseItem, useToggleCourseItem } from "../../hooks/useCourse";
+import { usePets } from "../../hooks/usePets";
+import { usePlacesByIds } from "../../hooks/usePlaces";
+import { mergeChecklists } from "../../lib/checklist";
+import { pickDefaultPet } from "../../lib/pets";
+import { placeDetailToSummary } from "../../lib/places";
+import { PlacesMapView } from "../../components/PlacesMapView";
+import type { MapPoint } from "../../components/PlacesMapView";
 import { useCourseStore } from "../../store/courseStore";
-import { usePetStore } from "../../store/petStore";
 import { useToastStore } from "../../store/toastStore";
-import { useFacilities } from "../../hooks/useFacilities";
 import type { CourseScreenProps } from "./types";
 
 const SKELETON_KEYS = ["skeleton-0", "skeleton-1"];
 
 export function CourseScreen({ navigation }: CourseScreenProps) {
-  const pet = usePetStore((state) => state.pets[0]);
-  const savedIds = useCourseStore((state) => state.savedIds);
-  const toggleSaved = useCourseStore((state) => state.toggleSaved);
-  const moveSaved = useCourseStore((state) => state.moveSaved);
+  const { data: pets = [] } = usePets();
+  const pet = pickDefaultPet(pets);
+  const { course, isPending: coursePending } = useMyCourse();
+  const toggleCourseItem = useToggleCourseItem();
+  const reorderCourseItem = useReorderCourseItem();
   const checkedPrep = useCourseStore((state) => state.checkedPrep);
   const togglePrep = useCourseStore((state) => state.togglePrep);
   const showToast = useToastStore((state) => state.show);
-  const { data: facilities, isPending } = useFacilities();
+  const items = course?.items ?? [];
+  const { data: places, isPending: placesPending } = usePlacesByIds(
+    items.map((item) => item.contentId),
+    { weightKg: pet?.weightKg, hasCage: pet?.hasCage },
+  );
+  const isPending = coursePending || (items.length > 0 && placesPending);
   const insets = useSafeAreaInsets();
 
-  const facilityById = new Map(facilities?.map((f) => [f.id, f]));
-  const saved = savedIds
-    .map((id) => facilityById.get(id))
-    .filter((f): f is NonNullable<typeof f> => !!f);
-  const mergedChecklist = mergeChecklists(saved);
+  const saved = places ?? [];
+  const mergedChecklist = mergeChecklists(saved.map((p) => p.pet_tags));
+  const mapPoints: MapPoint[] = saved
+    .map((place) =>
+      place.location
+        ? { contentId: place.contentId, lat: place.location.lat, lon: place.location.lon }
+        : null,
+    )
+    .filter((point): point is MapPoint => point !== null);
 
   return (
     <View className="flex-1 bg-screen px-5" style={{ paddingTop: insets.top + 16 }}>
@@ -48,7 +63,7 @@ export function CourseScreen({ navigation }: CourseScreenProps) {
         <FlatList
           data={SKELETON_KEYS}
           keyExtractor={(key) => key}
-          renderItem={() => <SavedFacilityRowSkeleton />}
+          renderItem={() => <SavedFacilityRowSkeleton withReorder />}
         />
       ) : saved.length === 0 || !pet ? (
         <FadeIn className="flex-1">
@@ -61,21 +76,49 @@ export function CourseScreen({ navigation }: CourseScreenProps) {
         <FadeIn className="flex-1">
           <FlatList
             data={saved}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.contentId}
+            ListHeaderComponent={
+              mapPoints.length > 0 ? (
+                <View className="mb-5 h-[220px] overflow-hidden rounded-2xl border border-card-border bg-card">
+                  <PlacesMapView points={mapPoints} showRoute />
+                </View>
+              ) : undefined
+            }
             renderItem={({ item, index }) => (
               <SavedFacilityRow
-                facility={item}
-                match={computeMatch(pet, item)}
+                place={placeDetailToSummary(item)}
                 order={index + 1}
                 onPress={() =>
-                  navigation.getParent()?.navigate("Detail", { facilityId: item.id })
+                  navigation.getParent()?.navigate("Detail", { facilityId: item.contentId })
                 }
                 onRemove={() => {
-                  toggleSaved(item.id);
-                  showToast("코스에서 제거했어요");
+                  toggleCourseItem.mutate(
+                    { course, contentId: item.contentId, title: item.title },
+                    { onSuccess: () => showToast("코스에서 제거했어요") },
+                  );
                 }}
-                onMoveUp={index > 0 ? () => moveSaved(item.id, "up") : undefined}
-                onMoveDown={index < saved.length - 1 ? () => moveSaved(item.id, "down") : undefined}
+                onMoveUp={
+                  index > 0
+                    ? () =>
+                        reorderCourseItem.mutate({
+                          courseId: course!.id,
+                          items,
+                          contentId: item.contentId,
+                          direction: "up",
+                        })
+                    : undefined
+                }
+                onMoveDown={
+                  index < saved.length - 1
+                    ? () =>
+                        reorderCourseItem.mutate({
+                          courseId: course!.id,
+                          items,
+                          contentId: item.contentId,
+                          direction: "down",
+                        })
+                    : undefined
+                }
               />
             )}
             ListFooterComponent={

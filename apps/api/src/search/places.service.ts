@@ -78,6 +78,7 @@ export interface PlacesSearchResult {
   total: number;
   page: number;
   size: number;
+  hasNext: boolean;
   items: PlaceSearchItem[];
   facets: {
     byCategory: PlaceFacetBucket[];
@@ -109,10 +110,13 @@ export class PlacesService {
       this.mapHit(hit, categoryByCode, regionByCode, dto),
     );
 
+    const total = this.getTotal(response.hits.total);
+
     return {
-      total: this.getTotal(response.hits.total),
+      total,
       page: dto.page,
       size: dto.size,
+      hasNext: dto.page * dto.size < total,
       items,
       facets: this.buildFacets(
         response.aggregations,

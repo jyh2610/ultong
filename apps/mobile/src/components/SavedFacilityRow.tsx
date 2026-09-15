@@ -3,11 +3,10 @@ import { View } from "react-native";
 import { Text } from "./AppText";
 import { PressableScale } from "./PressableScale";
 import { StatusBadge } from "./StatusBadge";
-import type { Facility, MatchResult } from "../types/facility";
+import type { PlaceSummary } from "../types/place";
 
 type SavedFacilityRowProps = {
-  facility: Facility;
-  match: MatchResult;
+  place: PlaceSummary;
   order: number;
   onPress?: () => void;
   onRemove?: () => void;
@@ -18,8 +17,7 @@ type SavedFacilityRowProps = {
 };
 
 export function SavedFacilityRow({
-  facility,
-  match,
+  place,
   order,
   onPress,
   onRemove,
@@ -36,10 +34,10 @@ export function SavedFacilityRow({
       <PressableScale onPress={onPress} disabled={!onPress} className="flex-1">
         <View className="flex-row items-center justify-between gap-2">
           <Text className="flex-1 text-body-lg font-bold text-ink" numberOfLines={1}>
-            {facility.name}
+            {place.title}
           </Text>
           <View className="flex-row items-center gap-2">
-            <StatusBadge status={match.status} />
+            <StatusBadge verdict={place.match.verdict} />
             {onRemove && (
               <PressableScale
                 onPress={onRemove}
@@ -54,7 +52,7 @@ export function SavedFacilityRow({
           </View>
         </View>
         <Text className="mt-0.5 text-label text-ink-soft">
-          {facility.type} · {facility.region}
+          {place.typeLabel} · {place.regionLabel}
         </Text>
       </PressableScale>
       {(onMoveUp || onMoveDown) && (
