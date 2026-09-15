@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { FlatList, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackIcon } from "../../components/icons/BackIcon";
@@ -11,23 +11,29 @@ import { EmptyState } from "../../components/EmptyState";
 import { FacilityListCard } from "../../components/FacilityListCard";
 import { FacilityListCardSkeleton } from "../../components/FacilityListCardSkeleton";
 import { FadeIn } from "../../components/FadeIn";
+import { PlacesMapView } from "../../components/PlacesMapView";
+import type { MapPoint } from "../../components/PlacesMapView";
 import { Skeleton } from "../../components/Skeleton";
-import { computeMatch } from "../../lib/matching";
-import { usePetStore } from "../../store/petStore";
+import { useMyLocation } from "../../hooks/useMyLocation";
+import { usePets } from "../../hooks/usePets";
+import { useSearchPlaces } from "../../hooks/usePlaces";
+import { getDistanceKm } from "../../lib/distance";
+import { pickDefaultPet } from "../../lib/pets";
+import { CONTENT_TYPE_ID_BY_CATEGORY, toPlaceSummary, WALK_FRIENDLY_CONTENT_TYPE_IDS } from "../../lib/places";
 import { useSearchHistoryStore } from "../../store/searchHistoryStore";
-import type { FacilityCategory, MatchStatus } from "../../types/facility";
-import { useFacilities } from "../../hooks/useFacilities";
-import { SEARCH_CATEGORIES } from "./constants";
-import type { SearchScreenProps } from "./types";
+import type { PlaceSearchItem, Verdict } from "../../types/place";
+import { resolveNearbyRegion } from "./api/resolveNearbyRegion";
+import type { NearbyRegion } from "./api/resolveNearbyRegion";
+import { DEFAULT_NEARBY_RADIUS_KM, SEARCH_CATEGORIES } from "./constants";
+import type { SearchScreenProps, SearchSortMode } from "./types";
 
 const SKELETON_KEYS = ["skeleton-0", "skeleton-1", "skeleton-2", "skeleton-3"];
 
-const WALK_FRIENDLY_CATEGORIES: FacilityCategory[] = ["관광지", "레포츠"];
-
-const MATCH_PRIORITY: Record<MatchStatus, number> = {
-  입장가능: 0,
-  조건부가능: 1,
-  확인필요: 2,
+const MATCH_PRIORITY: Record<Verdict, number> = {
+  allowed: 0,
+  conditional: 1,
+  denied: 2,
+  unknown: 3,
 };
 
 export function SearchScreen({ navigation, route }: SearchScreenProps) {
@@ -37,40 +43,86 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
   const [query, setQuery] = useState(route.params?.query ?? "");
   const [okOnly, setOkOnly] = useState(false);
   const [sortByMatch, setSortByMatch] = useState(false);
+  const [sortMode, setSortMode] = useState<SearchSortMode>("relevance");
+  const [nearbyRegion, setNearbyRegion] = useState<NearbyRegion | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const addRecentQuery = useSearchHistoryStore((state) => state.addQuery);
-  const pet = usePetStore((state) => state.pets[0]);
-  const { data: facilities, isPending } = useFacilities();
+  const { data: pets = [] } = usePets();
+  const pet = pickDefaultPet(pets);
   const insets = useSafeAreaInsets();
+  const myLocation = useMyLocation();
 
-  const withMatch =
-    pet && facilities ? facilities.map((f) => ({ facility: f, match: computeMatch(pet, f) })) : [];
+  const contentTypeId =
+    category === "all"
+      ? undefined
+      : category === "walk"
+        ? WALK_FRIENDLY_CONTENT_TYPE_IDS
+        : [CONTENT_TYPE_ID_BY_CATEGORY[category]];
 
-  const normalizedQuery = query.trim().toLowerCase();
+  const { data, isPending, fetchNextPage, hasNextPage, isFetchingNextPage } = useSearchPlaces({
+    q: query || undefined,
+    contentTypeId,
+    weightKg: pet?.weightKg,
+    hasCage: pet?.hasCage,
+    ldongRegnCd: sortMode === "distance" ? nearbyRegion?.ldongRegnCd : undefined,
+    ldongSignguCd: sortMode === "distance" ? nearbyRegion?.ldongSignguCd : undefined,
+    size: sortMode === "distance" ? 100 : undefined,
+  });
 
-  const matchesCategory = (facility: (typeof withMatch)[number]["facility"]) => {
-    if (category === "all") return true;
-    if (category === "walk") {
-      return facility.outdoorAllowed && WALK_FRIENDLY_CATEGORIES.includes(facility.category);
-    }
-    return facility.category === category;
+  // 좌표 획득 → 시/군/구 코드로 변환(정밀 좌표는 여기서만 쓰이고 서버로는 전송되지
+  // 않는다, Task 8 참고) → 거리순 모드 전환. 코드 매칭에 실패해도(null) 지역 필터
+  // 없이 거리순 모드는 켠다 — 정확도는 낮아지지만 기능 자체는 막지 않는다.
+  // myLocation.coords가 아니라 request()의 반환값을 쓰는 이유는 useMyLocation
+  // 훅 코드 주석 참고(다음 렌더 전까지는 훅 state가 갱신되지 않기 때문).
+  const enableDistanceSort = async () => {
+    const coords = await myLocation.request();
+    if (!coords) return;
+    const region = await resolveNearbyRegion(coords);
+    setNearbyRegion(region);
+    setSortMode("distance");
   };
 
-  const matchesQuery = (facility: (typeof withMatch)[number]["facility"]) =>
-    !normalizedQuery ||
-    facility.name.toLowerCase().includes(normalizedQuery) ||
-    facility.region.toLowerCase().includes(normalizedQuery) ||
-    facility.type.toLowerCase().includes(normalizedQuery);
+  useEffect(() => {
+    if (route.params?.autoDistanceSort) {
+      void enableDistanceSort();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 화면 진입 시 1회만 자동 실행
+  }, []);
 
-  const filtered = withMatch
-    .filter(
-      ({ facility, match }) =>
-        matchesCategory(facility) && matchesQuery(facility) && (!okOnly || match.status === "입장가능"),
-    )
-    .sort((a, b) => (sortByMatch ? MATCH_PRIORITY[a.match.status] - MATCH_PRIORITY[b.match.status] : 0));
+  const toggleDistanceSort = () => {
+    if (sortMode === "distance") {
+      setSortMode("relevance");
+      return;
+    }
+    void enableDistanceSort();
+  };
 
-  const okCount = withMatch.filter((f) => f.match.status === "입장가능").length;
-  const condCount = withMatch.filter((f) => f.match.status === "조건부가능").length;
-  const checkCount = withMatch.filter((f) => f.match.status === "확인필요").length;
+  const items = data?.pages.flatMap((page) => page.items) ?? [];
+
+  const orderedItems: PlaceSearchItem[] =
+    sortMode === "distance" && myLocation.coords
+      ? items
+          .filter((item) => item.location)
+          .map((item) => ({ item, distanceKm: getDistanceKm(myLocation.coords!, item.location!) }))
+          .filter(({ distanceKm }) => distanceKm <= DEFAULT_NEARBY_RADIUS_KM)
+          .sort((a, b) => a.distanceKm - b.distanceKm)
+          .map(({ item }) => item)
+      : items;
+
+  const places = orderedItems.map(toPlaceSummary);
+
+  const filtered = places
+    .filter((place) => !okOnly || place.match.verdict === "allowed")
+    .sort((a, b) => (sortByMatch ? MATCH_PRIORITY[a.match.verdict] - MATCH_PRIORITY[b.match.verdict] : 0));
+
+  const filteredIds = new Set(filtered.map((place) => place.contentId));
+  const mapPoints: MapPoint[] = orderedItems
+    .filter((item) => filteredIds.has(item.contentId) && item.location)
+    .map((item) => ({ contentId: item.contentId, lat: item.location!.lat, lon: item.location!.lon }));
+
+  const okCount = places.filter((p) => p.match.verdict === "allowed").length;
+  const condCount = places.filter((p) => p.match.verdict === "conditional").length;
+  const checkCount = places.filter((p) => p.match.verdict === "denied" || p.match.verdict === "unknown").length;
 
   return (
     <View className="flex-1 bg-screen px-5" style={{ paddingTop: insets.top + 14 }}>
@@ -97,12 +149,34 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
           />
         </View>
       </View>
-      <View className="mb-3.5">
+      <View className="mb-3.5 flex-row items-center justify-between">
         {isPending ? (
           <Skeleton width={40} height={12} radius={4} />
         ) : (
           <Text className="text-body text-ink-soft">{filtered.length}곳</Text>
         )}
+        <View className="flex-row rounded-full border border-card-border-alt bg-card p-0.5">
+          <PressableScale
+            onPress={() => setViewMode("list")}
+            className={`rounded-full px-3 py-1 ${viewMode === "list" ? "bg-primary" : ""}`}
+          >
+            <Text
+              className={`text-label font-semibold ${viewMode === "list" ? "text-white" : "text-ink-soft"}`}
+            >
+              리스트
+            </Text>
+          </PressableScale>
+          <PressableScale
+            onPress={() => setViewMode("map")}
+            className={`rounded-full px-3 py-1 ${viewMode === "map" ? "bg-primary" : ""}`}
+          >
+            <Text
+              className={`text-label font-semibold ${viewMode === "map" ? "text-white" : "text-ink-soft"}`}
+            >
+              지도
+            </Text>
+          </PressableScale>
+        </View>
       </View>
       <FlatList
         horizontal
@@ -150,7 +224,24 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
             매칭도순 정렬
           </Text>
         </PressableScale>
+        <PressableScale
+          onPress={toggleDistanceSort}
+          className={`rounded-full border px-3 py-1.5 ${
+            sortMode === "distance" ? "border-primary bg-primary" : "border-card-border-alt bg-card"
+          }`}
+        >
+          <Text
+            className={`text-label font-semibold ${sortMode === "distance" ? "text-white" : "text-ink-soft"}`}
+          >
+            거리순
+          </Text>
+        </PressableScale>
       </View>
+      {myLocation.status === "denied" && (
+        <Text className="mb-3.5 text-label text-ink-faint">
+          위치 권한을 허용하면 거리순으로 볼 수 있어요
+        </Text>
+      )}
       <View className="mb-4 flex-row flex-wrap gap-3">
         {isPending ? (
           <>
@@ -180,17 +271,30 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
             description="다른 카테고리를 선택해보세요"
           />
         </FadeIn>
+      ) : viewMode === "map" ? (
+        <FadeIn className="flex-1">
+          <PlacesMapView
+            points={mapPoints}
+            onMarkerPress={(contentId) => navigation.navigate("Detail", { facilityId: contentId })}
+          />
+        </FadeIn>
       ) : (
         <FadeIn className="flex-1">
           <FlatList
             data={filtered}
-            keyExtractor={(item) => item.facility.id}
+            keyExtractor={(item) => item.contentId}
             contentContainerClassName="pb-8"
+            onEndReached={() => hasNextPage && fetchNextPage()}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <ActivityIndicator className="py-4" color="#7A4A2B" />
+              ) : null
+            }
             renderItem={({ item }) => (
               <FacilityListCard
-                facility={item.facility}
-                match={item.match}
-                onPress={() => navigation.navigate("Detail", { facilityId: item.facility.id })}
+                place={item}
+                onPress={() => navigation.navigate("Detail", { facilityId: item.contentId })}
               />
             )}
           />
