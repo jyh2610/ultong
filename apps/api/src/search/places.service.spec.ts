@@ -214,24 +214,25 @@ describe('PlacesService', () => {
     });
   });
 
-  it('includes distanceKm from hit.sort only when sort=distance', async () => {
-    search.mockResolvedValue({
-      ...esResponse(),
-      hits: {
-        total: { value: 1 },
-        hits: [{ ...esResponse().hits.hits[0], sort: [4.21] }],
-      },
-    });
-
-    const withDistance = await service.search(
-      baseDto({ sort: 'distance', lat: 35.07, lon: 129.01 }),
-    );
-    expect(withDistance.items[0].distanceKm).toBe(4.21);
-
-    search.mockResolvedValue(esResponse());
-    const withoutDistance = await service.search(baseDto());
-    expect(withoutDistance.items[0].distanceKm).toBeUndefined();
-  });
+  // [비활성화 2026-09-14] distanceKm 계산 자체가 비활성화됨 — 위 places.service.ts 참고
+  // it('includes distanceKm from hit.sort only when sort=distance', async () => {
+  //   search.mockResolvedValue({
+  //     ...esResponse(),
+  //     hits: {
+  //       total: { value: 1 },
+  //       hits: [{ ...esResponse().hits.hits[0], sort: [4.21] }],
+  //     },
+  //   });
+  //
+  //   const withDistance = await service.search(
+  //     baseDto({ sort: 'distance', lat: 35.07, lon: 129.01 }),
+  //   );
+  //   expect(withDistance.items[0].distanceKm).toBe(4.21);
+  //
+  //   search.mockResolvedValue(esResponse());
+  //   const withoutDistance = await service.search(baseDto());
+  //   expect(withoutDistance.items[0].distanceKm).toBeUndefined();
+  // });
 
   it('builds facets: byCategory/byType/bySido with resolved names, byConfidence without names', async () => {
     search.mockResolvedValue(esResponse());

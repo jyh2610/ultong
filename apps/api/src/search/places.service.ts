@@ -2,10 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { estypes } from '@elastic/elasticsearch';
 import { EsClientService } from './es-client.service';
 import { CodesService, CodeItem } from './codes.service';
-import {
-  PlacesSearchQueryDto,
-  PlacesSortOption,
-} from './dto/places-search-query.dto';
+import { PlacesSearchQueryDto } from './dto/places-search-query.dto';
 import { buildPlacesSearchQuery } from './places-search.query-builder';
 import { matchVerdict, MatchResult } from './match-verdict';
 
@@ -57,7 +54,9 @@ export interface PlaceSearchItem {
     categoryPath: string | null;
   };
   region: { sido: string | null; sigungu: string | null };
-  distanceKm?: number;
+  // [비활성화 2026-09-14] 서버는 더 이상 distanceKm을 계산하지 않는다 — 클라이언트가
+  // location으로 직접 계산한다 (docs/superpowers/specs/2026-09-14-location-client-side-design.md)
+  // distanceKm?: number;
   petTags: Record<string, unknown>;
   match: MatchResult;
   evidence: unknown[];
@@ -171,7 +170,6 @@ export class PlacesService {
           null,
         sigungu: region.sigungu ?? null,
       },
-      distanceKm: this.getDistanceKm(hit, dto.sort),
       petTags,
       match: matchVerdict(petTags, {
         weightKg: dto.weightKg ?? null,
@@ -182,14 +180,16 @@ export class PlacesService {
     };
   }
 
-  private getDistanceKm(
-    hit: estypes.SearchHit<PlaceSource>,
-    sort: PlacesSortOption,
-  ): number | undefined {
-    if (sort !== 'distance') return undefined;
-    const value: unknown = hit.sort?.[0];
-    return typeof value === 'number' ? value : undefined;
-  }
+  // [비활성화 2026-09-14] 위치정보사업자 신고 회피 — 클라이언트 이관
+  // (docs/superpowers/specs/2026-09-14-location-client-side-design.md)
+  // private getDistanceKm(
+  //   hit: estypes.SearchHit<PlaceSource>,
+  //   sort: PlacesSortOption,
+  // ): number | undefined {
+  //   if (sort !== 'distance') return undefined;
+  //   const value: unknown = hit.sort?.[0];
+  //   return typeof value === 'number' ? value : undefined;
+  // }
 
   private getTotal(total: estypes.SearchHitsMetadata['total']): number {
     if (typeof total === 'number') return total;
