@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Image, View } from "react-native";
 
 import { Text } from "./AppText";
 import { PressableScale } from "./PressableScale";
@@ -13,7 +13,14 @@ type FacilityCarouselCardProps = {
 export function FacilityCarouselCard({ place, onPress }: FacilityCarouselCardProps) {
   return (
     <PressableScale onPress={onPress} className="w-[172px]">
-      <View className="mb-2 h-[112px] w-[172px] rounded-2xl bg-[#EEE9E0]" />
+      {place.thumb ? (
+        <Image
+          source={{ uri: place.thumb }}
+          className="mb-2 h-[112px] w-[172px] rounded-2xl bg-[#EEE9E0]"
+        />
+      ) : (
+        <View className="mb-2 h-[112px] w-[172px] rounded-2xl bg-[#EEE9E0]" />
+      )}
       <StatusBadge verdict={place.match.verdict} />
       <Text className="mt-1.5 text-body-lg font-bold text-ink">
         {place.title} · {place.typeLabel}

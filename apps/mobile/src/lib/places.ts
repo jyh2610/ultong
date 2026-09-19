@@ -76,6 +76,7 @@ export function toPlaceSummary(item: PlaceSearchItem): PlaceSummary {
     title: item.title,
     typeLabel: item.category.contentType,
     regionLabel: item.region.sido,
+    thumb: item.thumb,
     match: item.match,
   };
 }
@@ -86,6 +87,7 @@ export function placeDetailToSummary(detail: PlaceDetail): PlaceSummary {
     title: detail.title,
     typeLabel: detail.category?.content_type ?? null,
     regionLabel: detail.region?.sido ?? null,
+    thumb: detail.media?.thumb ?? detail.media?.first_image ?? null,
     match: detail.match,
   };
 }

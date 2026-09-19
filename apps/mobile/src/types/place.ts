@@ -49,6 +49,7 @@ export interface PlaceSummary {
   title: string;
   typeLabel: string | null;
   regionLabel: string | null;
+  thumb: string | null;
   match: MatchResult;
 }
 
