@@ -84,14 +84,20 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
 
   useEffect(() => {
     if (route.params?.autoDistanceSort) {
-      // enableDistanceSort는 await 이후에만 setState를 호출한다(동기 호출 아님) —
-      // 규칙이 async 경계를 구분하지 못해 오탐 발생. 라우트 파라미터로 화면 진입 시
-      // 1회 자동 실행하는 의도된 패턴이다.
+      // 홈 화면의 "내 주변" 버튼으로 진입한 경우 항상 리스트 뷰로 보여준다 — 이 화면
+      // 인스턴스가 네비게이션 스택에 이미 있어 리마운트 없이 재사용되면 이전 뷰모드
+      // (지도)가 그대로 남아있을 수 있어 명시적으로 초기화한다.
       // eslint-disable-next-line react-hooks/set-state-in-effect
+      setViewMode("list");
+      // enableDistanceSort는 await 이후에만 setState를 호출한다(동기 호출 아님) —
+      // 라우트 파라미터로 화면 진입 시 1회 자동 실행하는 의도된 패턴이다.
       void enableDistanceSort();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 화면 진입 시 1회만 자동 실행
-  }, []);
+    // route.params?.autoDistanceSort는 매번 달라지는 트리거 값(타임스탬프)이다 — 이 화면이
+    // 네비게이션 스택에 이미 있어 리마운트 없이 재사용되는 경우(React Navigation 기본
+    // 동작)에도 "내 주변" 버튼을 다시 누를 때마다 이 값이 바뀌므로 effect가 다시 실행된다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- enableDistanceSort는 의도적으로 제외(재생성될 때마다 재실행 방지)
+  }, [route.params?.autoDistanceSort]);
 
   const toggleDistanceSort = () => {
     if (sortMode === "distance") {

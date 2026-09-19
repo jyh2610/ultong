@@ -47,7 +47,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   const handleNearbyPress = async () => {
     const coords = await myLocation.request();
     if (!coords) return;
-    navigation.getParent()?.navigate("Search", { autoDistanceSort: true });
+    navigation.getParent()?.navigate("Search", { autoDistanceSort: Date.now() });
   };
 
   const recommendations = (data?.pages.flatMap((page) => page.items) ?? []).map(toPlaceSummary);

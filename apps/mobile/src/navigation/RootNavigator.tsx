@@ -17,7 +17,10 @@ export type RootStackParamList = {
   Signup: undefined;
   Onboarding: undefined;
   MainTabs: undefined;
-  Search: { category?: string; query?: string; autoDistanceSort?: boolean };
+  // autoDistanceSort는 boolean이 아니라 매 호출마다 달라지는 트리거 값(Date.now())이다 —
+  // 화면이 스택에 이미 있어 리마운트 없이 재사용될 때도(React Navigation 기본 동작)
+  // 값이 매번 바뀌어야 SearchScreen의 트리거 useEffect가 다시 실행된다.
+  Search: { category?: string; query?: string; autoDistanceSort?: number };
   Detail: { facilityId: string };
 };
 
