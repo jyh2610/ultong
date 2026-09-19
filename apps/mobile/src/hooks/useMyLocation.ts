@@ -16,11 +16,18 @@ export function useMyLocation() {
       setStatus("denied");
       return null;
     }
-    const position = await Location.getCurrentPositionAsync({});
-    const nextCoords = { lat: position.coords.latitude, lon: position.coords.longitude };
-    setCoords(nextCoords);
-    setStatus("granted");
-    return nextCoords;
+    try {
+      const position = await Location.getCurrentPositionAsync({});
+      const nextCoords = { lat: position.coords.latitude, lon: position.coords.longitude };
+      setCoords(nextCoords);
+      setStatus("granted");
+      return nextCoords;
+    } catch {
+      // 권한은 허용됐지만 위치를 가져오지 못한 경우(위치 서비스 꺼짐, GPS 사용 불가 등) —
+      // 권한 거부와 동일하게 처리한다. 기존 "denied" 상태/안내 문구를 재사용한다(YAGNI).
+      setStatus("denied");
+      return null;
+    }
   }, []);
 
   return { status, coords, request };
