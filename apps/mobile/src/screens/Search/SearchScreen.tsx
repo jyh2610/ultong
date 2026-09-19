@@ -84,6 +84,10 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
 
   useEffect(() => {
     if (route.params?.autoDistanceSort) {
+      // enableDistanceSort는 await 이후에만 setState를 호출한다(동기 호출 아님) —
+      // 규칙이 async 경계를 구분하지 못해 오탐 발생. 라우트 파라미터로 화면 진입 시
+      // 1회 자동 실행하는 의도된 패턴이다.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       void enableDistanceSort();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 화면 진입 시 1회만 자동 실행
