@@ -2,8 +2,13 @@ import { cssInterop } from "nativewind";
 import { Pressable, type PressableProps } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-cssInterop(AnimatedPressable, { className: "style" });
+// Apply cssInterop to the base Pressable BEFORE wrapping it with
+// Animated.createAnimatedComponent — applying it after (to the already-animated
+// component) causes NativeWind's resolved className style to never reach the
+// underlying element, dropping every visual utility class (bg-*, border-*,
+// rounded-*, padding, width, ...) at runtime.
+const StyledPressable = cssInterop(Pressable, { className: "style" });
+const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 type PressableScaleProps = Omit<PressableProps, "style"> & {
   style?: Exclude<PressableProps["style"], Function>;
