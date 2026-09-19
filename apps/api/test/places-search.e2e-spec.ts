@@ -209,4 +209,11 @@ describe('Places search (e2e)', () => {
       .query({ sort: 'not-a-real-sort' })
       .expect(400);
   });
+
+  it('rejects lat/lon/radiusKm query params with 400 (server must never accept precise coordinates)', async () => {
+    await request(app.getHttpServer())
+      .get('/places/search')
+      .query({ lat: 35.16, lon: 129.16, radiusKm: 5 })
+      .expect(400);
+  });
 });
