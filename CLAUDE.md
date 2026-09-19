@@ -38,3 +38,13 @@ yarn build                  # 모든 워크스페이스 build (mobile은 build �
 ## 배경 (공모전 컨텍스트)
 
 이 프로젝트는 2026 관광데이터 활용 공모전 제출용이다. 반려동물 동반여행 조건 매칭 앱(mobile)과 그 API(api)를 한 팀원이 담당하며, Python 배치/Elasticsearch/PostgreSQL 스키마는 팀원이 별도로 맡는다. 관련 규제 제약(TourAPI 저장 신고, 위치정보사업자 신고 등)은 실제 API 연동 작업 시 재확인이 필요하다.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

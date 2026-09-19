@@ -52,3 +52,4 @@ android/
 .playwright-mcp/
 
 .superpowers/
+graphify-out/
