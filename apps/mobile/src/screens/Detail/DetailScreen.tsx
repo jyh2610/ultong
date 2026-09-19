@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, Share, View } from "react-native";
+import { Image, ScrollView, Share, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackIcon } from "../../components/icons/BackIcon";
@@ -123,7 +123,14 @@ export function DetailScreen({ navigation, route }: DetailScreenProps) {
     <FadeIn className="flex-1 bg-screen">
       <ScrollView>
         <View>
-          <View className="h-[210px] bg-[#EEE9E0]" />
+          {place.media?.first_image ?? place.media?.thumb ? (
+            <Image
+              source={{ uri: place.media?.first_image ?? place.media?.thumb }}
+              className="h-[210px] bg-[#EEE9E0]"
+            />
+          ) : (
+            <View className="h-[210px] bg-[#EEE9E0]" />
+          )}
           <PressableScale
             onPress={() => navigation.goBack()}
             accessibilityRole="button"
