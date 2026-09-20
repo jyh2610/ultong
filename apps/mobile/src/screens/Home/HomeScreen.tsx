@@ -78,7 +78,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             returnKeyType="search"
             placeholder="지역, 시설명으로 검색"
             textAlignVertical="center"
-            className="h-5 flex-1 text-body-lg text-ink"
+            className="flex-1 text-body-lg text-ink"
           />
         </View>
         {!query && recentQueries.length > 0 && (

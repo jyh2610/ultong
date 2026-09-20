@@ -8,7 +8,14 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://34-136-72-143.sslip.io",
+        "EXPO_PUBLIC_KAKAO_JS_KEY": "3e8bae9b19d716ec9d8776f56bf49382"
+      }
     },
     "production": {}
   },

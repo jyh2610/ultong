@@ -155,7 +155,7 @@ export function SearchScreen({ navigation, route }: SearchScreenProps) {
             autoFocus={!route.params?.category}
             returnKeyType="search"
             textAlignVertical="center"
-            className="h-5 flex-1 text-body-lg text-ink"
+            className="flex-1 text-body-lg text-ink"
           />
         </View>
       </View>

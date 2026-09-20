@@ -7,7 +7,10 @@ export class EsClientService {
   readonly client: Client;
 
   constructor(config: ConfigService) {
-    this.client = new Client({ node: config.getOrThrow<string>('ES_NODE') });
+    this.client = new Client({
+      node: config.getOrThrow<string>('ES_NODE'),
+      requestTimeout: 5000,
+    });
   }
 
   // Postgres의 content_id는 ES 문서를 FK 없이 참조한다 — 무결성은 여기서 보장한다
